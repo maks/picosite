@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:io/io.dart';
 import 'package:path/path.dart' as p;
 import "package:markdown/markdown.dart" as m;
 import 'package:yaml/yaml.dart' as y;
@@ -50,13 +51,17 @@ String processMarkdown(String doc, String title) {
   } else {
     header = "<h1>$title</h1>\n";
   }
-
   print("finished processing:$title");
 
+  // TODO: change to use proper templating with  handlebars/mustache
   body = body
       .replaceAll("{{title}}", title)
       .replaceAll("{{header}}", header)
       .replaceAll("{{body}}", body);
 
   return m.markdownToHtml(body);
+}
+
+void copyStatic(String input, String output) async {
+  return copyPath(input, output);
 }

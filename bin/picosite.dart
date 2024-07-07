@@ -4,6 +4,8 @@ import 'package:picosite/config.dart';
 import 'package:picosite/content.dart';
 import 'package:picosite/previewserver.dart';
 
+import 'package:path/path.dart' as p;
+
 var config = PicositeConfig(
   outputPath: "output",
   sitePath: "site",
@@ -27,6 +29,8 @@ void main(List<String> arguments) async {
   for (final f in siteDirFiles) {
     processFile(f, config.outputPath);
   }
+
+  copyStatic(p.join(config.sitePath, "static"), config.outputPath);
 
   if (config.preview) {
     final p = PreviewServer("output");
