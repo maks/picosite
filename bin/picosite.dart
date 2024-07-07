@@ -4,6 +4,7 @@ import 'package:args/args.dart';
 import 'package:path/path.dart' as p;
 import 'package:markdown/markdown.dart' as m;
 import 'package:yaml/yaml.dart' as y;
+import 'previewserver.dart';
 
 const String version = '0.0.1';
 
@@ -13,6 +14,12 @@ ArgParser buildParser() {
       'site',
       abbr: 's',
       help: 'Directory containing site source files.',
+    )
+    ..addFlag(
+      'preview',
+      abbr: 'p',
+      negatable: false,
+      help: 'Print this usage information.',
     )
     ..addFlag(
       'help',
@@ -40,8 +47,9 @@ void printUsage(ArgParser argParser) {
 
 String sitePath = ".";
 String outputPath = "output";
+bool _preview = false;
 
-void main(List<String> arguments) {
+void main(List<String> arguments) async {
   handleArgs(arguments);
   print("site dir: $sitePath");
 
@@ -69,6 +77,11 @@ void main(List<String> arguments) {
       print("wrote output to: $outputPath");
     }
   }
+
+  if (_preview) {
+    final p = PreviewServer("output");
+    await p.start();
+  }
 }
 
 void handleArgs(arguments) {
@@ -78,6 +91,10 @@ void handleArgs(arguments) {
     bool verbose = false;
 
     // Process the parsed arguments.
+    if (results.wasParsed('preview')) {
+      _preview = true;
+    }
+
     if (results.wasParsed('site')) {
       sitePath = results.option("site")!;
     }
