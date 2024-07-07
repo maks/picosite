@@ -3,7 +3,6 @@ import 'dart:io';
 import 'package:args/args.dart';
 import 'package:path/path.dart' as p;
 import 'package:markdown/markdown.dart' as m;
-import 'defaulttemplate.dart' as t;
 import 'package:yaml/yaml.dart' as y;
 
 const String version = '0.0.1';
@@ -108,32 +107,32 @@ void handleArgs(arguments) {
   }
 }
 
-String processMarkdown(String markdown, String title) {
-  final titlePattern = RegExp("^# (.*)");
+String processMarkdown(String doc, String title) {
+  final mdTitlePattern = RegExp("^# (.*)");
+  String body = "";
 
   // try to process any yaml front matter
-  var sections = markdown.split("---");
+  var sections = doc.split("---");
   if (sections.length != 3 && sections.length != 2) {
     // try again with 4 dashes
-    sections = markdown.split("----");
+    sections = doc.split("----");
   }
   Map? frontMatter;
   // front matter only delimited by trailing dashes line
   if (sections.length == 2) {
     frontMatter = y.loadYaml(sections[0]);
-    markdown = sections[1];
+    body = sections[1];
   } // front matter  delimited by leading and trailing dashes line
   else if (sections.length == 3) {
     frontMatter = y.loadYaml(sections[1]);
-    markdown = sections[2];
+    body = sections[2];
   } else {
     print("no YAML frontmatter");
   }
 
-  var body = m.markdownToHtml(markdown);
 
   String header = "";
-  final match = titlePattern.firstMatch(markdown);
+  final match = mdTitlePattern.firstMatch(body);
   if (match != null) {
     title = match[1]!;
   } else if (frontMatter?["title"] != null) {
@@ -144,10 +143,10 @@ String processMarkdown(String markdown, String title) {
 
   print("finished processing:$title");
 
-  final html = t.template
-      .replaceAll("{{title}}", title);
-  // .replaceAll("{{header}}", header)
-  // .replaceAll("{{body}}", body);
+  body = body
+      .replaceAll("{{title}}", title)
+      .replaceAll("{{header}}", header)
+      .replaceAll("{{body}}", body);
 
-  return html;
+  return m.markdownToHtml(body);
 }
