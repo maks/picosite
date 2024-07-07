@@ -1,11 +1,8 @@
 import 'dart:io';
-
-import 'package:path/path.dart' as p;
 import 'package:picosite/cli.dart';
 import 'package:picosite/config.dart';
 import 'package:picosite/content.dart';
 import 'package:picosite/previewserver.dart';
-
 
 var config = PicositeConfig(
   outputPath: "output",
@@ -28,18 +25,7 @@ void main(List<String> arguments) async {
 
   final siteDirFiles = siteDir.listSync();
   for (final f in siteDirFiles) {
-    final name = p.basename(f.path);
-    print("found: $name");
-    if (p.extension(f.path).toLowerCase() == '.md') {
-      print("processing: $name");
-      final markdown = (f as File).readAsStringSync();
-      final title = p.basenameWithoutExtension(f.path);
-      final html = processMarkdown(markdown, title);
-
-      final outputFile = File(p.join(config.outputPath, "$title.html"));
-      outputFile.writeAsStringSync(html);
-      print("wrote output to: ${config.outputPath}");
-    }
+    processFile(f, config.outputPath);
   }
 
   if (config.preview) {

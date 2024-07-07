@@ -1,5 +1,22 @@
+import 'dart:io';
+import 'package:path/path.dart' as p;
 import "package:markdown/markdown.dart" as m;
 import 'package:yaml/yaml.dart' as y;
+
+void processFile(FileSystemEntity f, String outputPath) {
+  final name = p.basename(f.path);
+  print("found input file: $name");
+  if (p.extension(f.path).toLowerCase() == '.md') {
+    print("processing: $name");
+    final markdown = (f as File).readAsStringSync();
+    final title = p.basenameWithoutExtension(f.path);
+    final html = processMarkdown(markdown, title);
+
+    final outputFile = File(p.join(outputPath, "$title.html"));
+    outputFile.writeAsStringSync(html);
+    print("wrote output to: $outputPath");
+  }
+}
 
 String processMarkdown(String doc, String title) {
   final mdTitlePattern = RegExp("^# (.*)");
