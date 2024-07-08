@@ -10,12 +10,14 @@ import 'package:watcher/watcher.dart';
 var config = PicositeConfig(
   outputPath: "output",
   sitePath: "site",
+  includesPath: '',
   preview: false,
 );
 
 void main(List<String> arguments) async {
   config = handleArgs(arguments, config);
-  print("site dir: ${config.sitePath} output:${config.outputPath}");
+  config = config.copyWith(includesPath: p.join(config.sitePath, 'includes'));
+  print('site dir: ${config.sitePath} output:${config.outputPath}');
 
   final outputDir = Directory(config.outputPath);
   outputDir.createSync(recursive: true);
@@ -28,7 +30,7 @@ void main(List<String> arguments) async {
 
   final siteDirFiles = siteDir.listSync();
   for (final f in siteDirFiles) {
-    processFile(f, config.outputPath);
+    await processFile(f, config.outputPath, config.includesPath);
   }
 
   copyStatic(p.join(config.sitePath, "static"), config.outputPath);
@@ -37,7 +39,7 @@ void main(List<String> arguments) async {
     final watcher = DirectoryWatcher(siteDir.path);
     watcher.events.listen((event) {
       print("WATCH event:$event");
-      processFile(File(event.path), config.outputPath);
+      processFile(File(event.path), config.outputPath, config.includesPath);
     });
 
     final p = PreviewServer("output");

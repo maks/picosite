@@ -1,17 +1,23 @@
 import 'dart:io';
 import 'package:io/io.dart';
+import 'package:mustache_template/mustache.dart';
 import 'package:path/path.dart' as p;
 import "package:markdown/markdown.dart" as m;
 import 'package:yaml/yaml.dart' as y;
 
-void processFile(FileSystemEntity f, String outputPath) {
+Future<void> processFile(final FileSystemEntity f, final String outputPath,
+    final String includesPath) async {
   final name = p.basename(f.path);
   print("found input file: $name");
   if (p.extension(f.path).toLowerCase() == '.md') {
     print("processing: $name");
     final markdown = (f as File).readAsStringSync();
     final title = p.basenameWithoutExtension(f.path);
-    final html = processMarkdown(markdown, title);
+    final html = await processMarkdown(
+      markdown,
+      title,
+      includesPath,
+    );
 
     final outputFile = File(p.join(outputPath, "$title.html"));
     outputFile.writeAsStringSync(html);
@@ -19,7 +25,8 @@ void processFile(FileSystemEntity f, String outputPath) {
   }
 }
 
-String processMarkdown(String doc, String title) {
+Future<String> processMarkdown(
+    final String doc, final String title, final String partialsPath) async {
   final mdTitlePattern = RegExp("^# (.*)");
   String body = "";
 
@@ -42,24 +49,33 @@ String processMarkdown(String doc, String title) {
     print("no YAML frontmatter");
   }
 
-  String header = "";
+  Map docVariables = {};
+  docVariables["header"] = "";
+  docVariables["title"] = title;
   final match = mdTitlePattern.firstMatch(body);
   if (match != null) {
-    title = match[1]!;
+    docVariables["title"] = match[1]!;
   } else if (frontMatter?["title"] != null) {
-    title = frontMatter!["title"];
+    docVariables["title"] = frontMatter!["title"];
   } else {
-    header = "<h1>$title</h1>\n";
+    docVariables["header"] = "<h1>$title</h1>\n";
   }
   print("finished processing:$title");
 
-  // TODO: change to use proper templating with  handlebars/mustache
-  body = body
-      .replaceAll("{{title}}", title)
-      .replaceAll("{{header}}", header)
-      .replaceAll("{{body}}", body);
+  Template? partialsFileResolver(String name) {
+    final partial = File(p.join(partialsPath, "$name.part")).readAsStringSync();
+    return Template(partial);
+  }
 
-  return m.markdownToHtml(body);
+  final template = Template(
+    body,
+    name: title,
+    partialResolver: partialsFileResolver,
+  );
+
+  var rendered = template.renderString(docVariables);
+
+  return m.markdownToHtml(rendered);
 }
 
 void copyStatic(String input, String output) async {

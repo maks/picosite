@@ -1,16 +1,16 @@
 name: picosite
 description: A minimal static site generator with http preview server
 version: 0.0.1
-# repository: https://github.com/my_org/my_repo
+repository: https://github.com/maks/picosite
 
 environment:
   sdk: ^3.4.4
 
-# Add regular dependencies here.
 dependencies:
   args: ^2.4.2
-  markdown: any
   io: any
+  markdown: any
+  mustache_template: ^2.0.0
   path: any
   shelf: any
   shelf_static: any
