@@ -5,6 +5,7 @@ import 'package:picosite/content.dart';
 import 'package:picosite/previewserver.dart';
 
 import 'package:path/path.dart' as p;
+import 'package:watcher/watcher.dart';
 
 var config = PicositeConfig(
   outputPath: "output",
@@ -33,6 +34,12 @@ void main(List<String> arguments) async {
   copyStatic(p.join(config.sitePath, "static"), config.outputPath);
 
   if (config.preview) {
+    final watcher = DirectoryWatcher(siteDir.path);
+    watcher.events.listen((event) {
+      print("WATCH event:$event");
+      processFile(File(event.path), config.outputPath);
+    });
+
     final p = PreviewServer("output");
     await p.start();
   }
