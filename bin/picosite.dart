@@ -10,14 +10,15 @@ import 'package:watcher/watcher.dart';
 var config = PicositeConfig(
   outputPath: "output",
   sitePath: "site",
-  includesPath: '',
+  includesPath: 'includes',
+  assetsPath: 'assets',
   preview: false,
 );
 
 void main(List<String> arguments) async {
   config = handleArgs(arguments, config);
-  config = config.copyWith(includesPath: p.join(config.sitePath, 'includes'));
-  print('site dir: ${config.sitePath} output:${config.outputPath}');
+  print('site dir: ${config.sitePath} includes dir: ${config.includesPath} assets dir: ${config.assetsPath}' 
+  ' output:${config.outputPath}');
 
   final outputDir = Directory(config.outputPath);
   outputDir.createSync(recursive: true);
@@ -28,22 +29,32 @@ void main(List<String> arguments) async {
     exit(1);
   }
 
-  final siteDirFiles = siteDir.listSync();
-  for (final f in siteDirFiles) {
-    await processFile(f, config.outputPath, config.includesPath);
-  }
-
-  copyStatic(p.join(config.sitePath, "static"), config.outputPath);
+  await processAllFiles(siteDir, config);
+  
+  copyStatic(config.sitePath, config.outputPath);
 
   if (config.preview) {
     final watcher = DirectoryWatcher(siteDir.path);
+    final includesWatcher = DirectoryWatcher(config.includesPath);
     watcher.events.listen((event) {
       print("WATCH event:$event");
       processFile(File(event.path), config.outputPath, config.includesPath);
+    });
+    includesWatcher.events.listen((event) async {
+      print("INC WATCH event:$event");
+      // dont know which files use this particular partial so reprocess all
+      await processAllFiles(siteDir, config);
     });
 
     final p = PreviewServer("output");
     await p.start();
   }
+}
+
+Future<void> processAllFiles(Directory siteDir, PicositeConfig config) async {
+  final siteDirFiles = siteDir.listSync();
+  for (final f in siteDirFiles) {
+    await processFile(f, config.outputPath, config.includesPath);
+  }	
 }
 

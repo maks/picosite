@@ -12,6 +12,21 @@ ArgParser buildParser() {
       abbr: 's',
       help: 'Directory containing site source files.',
     )
+    ..addOption(
+      'includes',
+      abbr: 'i',
+      help: 'Directory include (mustache partials) source files.',
+    )
+    ..addOption(
+      'assets',
+      abbr: 'a',
+      help: 'Directory containing site asset (static) files.',
+    )
+    ..addOption(
+      'output',
+      abbr: 'o',
+      help: 'Directory with processed output files.',
+    )
     ..addFlag(
       'preview',
       abbr: 'p',
@@ -55,6 +70,14 @@ PicositeConfig handleArgs(arguments, PicositeConfig config) {
 
     if (results.wasParsed('site')) {
       config = config.copyWith(sitePath: results.option("site"));
+    }
+
+    if (results.wasParsed('includes')) {
+      config = config.copyWith(includesPath: results.option("includes"));
+    }
+
+    if (results.wasParsed('assets')) {
+      config = config.copyWith(assetsPath: results.option("assets"));
     }
 
     if (results.wasParsed('help')) {

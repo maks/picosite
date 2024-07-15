@@ -63,7 +63,7 @@ Future<String> processMarkdown(
   print("finished processing:$title");
 
   Template? partialsFileResolver(String name) {
-    final partial = File(p.join(partialsPath, "$name.part")).readAsStringSync();
+    final partial = File(p.join(partialsPath, name)).readAsStringSync();
     return Template(partial);
   }
 
