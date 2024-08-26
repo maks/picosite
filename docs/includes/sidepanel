@@ -1,0 +1,31 @@
+<div class="sidepanel">
+    <a class="title" href="#">Introduction</a>
+    
+    <a class="section" href="#">Supported Versions</a>
+    <a class="section" href="#">About this App</a>
+    <a class="section" href="#technology">Technology</a>
+
+    <div class="divider left"></div>
+
+    <a class="title" href="#gettingstarted">Getting Started</a>
+
+    <a class="section" href="#installingapp">Installing the App</a>
+        <a class="section" href="#openingapp">Opening the App</a>
+
+    <div class="divider left"></div>
+
+    <a class="title" href="#basicfeatures">Basic Features</a>
+
+    <a class="section" href="#basicfeatures">Feature 1</a>
+    <a class="section" href="#basicfeatures">Feature 2</a>
+    <a class="section" href="#feature3">Feature 3</a>
+
+    <div class="divider left"></div>
+
+    <a class="title" href="#advanced">Advanced Features</a>
+
+    <a class="section" href="#advanced">Feature A</a>
+
+    <div class="space double"></div>
+
+</div>
