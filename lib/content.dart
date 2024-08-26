@@ -6,7 +6,7 @@ import "package:markdown/markdown.dart" as m;
 import 'package:yaml/yaml.dart' as y;
 
 Future<void> processFile(final FileSystemEntity f, final String outputPath,
-    final String includesPath) async {
+    final String includesPath, String templatesPath) async {
   final name = p.basename(f.path);
   print("found input file: $name");
   if (p.extension(f.path).toLowerCase() == '.md') {
@@ -17,6 +17,7 @@ Future<void> processFile(final FileSystemEntity f, final String outputPath,
       markdown,
       title,
       includesPath,
+      templatesPath,
     );
 
     final outputFile = File(p.join(outputPath, "$title.html"));
@@ -25,8 +26,8 @@ Future<void> processFile(final FileSystemEntity f, final String outputPath,
   }
 }
 
-Future<String> processMarkdown(
-    final String doc, final String title, final String partialsPath) async {
+Future<String> processMarkdown(final String doc, final String title,
+    final String partialsPath, final String templatesPath) async {
   final mdTitlePattern = RegExp("^# (.*)");
   String body = "";
 
@@ -36,7 +37,7 @@ Future<String> processMarkdown(
     // try again with 4 dashes
     sections = doc.split("----");
   }
-  Map? frontMatter;
+  Map frontMatter = {};
   // front matter only delimited by trailing dashes line
   if (sections.length == 2) {
     frontMatter = y.loadYaml(sections[0]);
@@ -55,27 +56,38 @@ Future<String> processMarkdown(
   final match = mdTitlePattern.firstMatch(body);
   if (match != null) {
     docVariables["title"] = match[1]!;
-  } else if (frontMatter?["title"] != null) {
-    docVariables["title"] = frontMatter!["title"];
+  } else if (frontMatter["title"] != null) {
+    docVariables["title"] = frontMatter["title"];
   } else {
     docVariables["header"] = "<h1>$title</h1>\n";
   }
   print("finished processing:$title");
+
+  docVariables['body'] = m.markdownToHtml(body);
 
   Template? partialsFileResolver(String name) {
     final partial = File(p.join(partialsPath, name)).readAsStringSync();
     return Template(partial);
   }
 
+  // find template to use for this page
+  String templateName = frontMatter['template'] ?? '';
+
+  print("CWD:${Directory.current.path}");
+
+  String templateText =
+      File('$templatesPath/$templateName.html').readAsStringSync();
+
   final template = Template(
-    body,
+    templateText,
     name: title,
+    htmlEscapeValues: false,
     partialResolver: partialsFileResolver,
   );
 
   var rendered = template.renderString(docVariables);
 
-  return m.markdownToHtml(rendered);
+  return rendered;
 }
 
 void copyStatic(String input, String output) async {

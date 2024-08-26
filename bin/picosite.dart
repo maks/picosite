@@ -12,16 +12,24 @@ var config = PicositeConfig(
   sitePath: "site",
   includesPath: 'includes',
   assetsPath: 'assets',
+  templatesPath: 'templates',
   preview: false,
 );
 
 void main(List<String> arguments) async {
   config = handleArgs(arguments, config);
-  print('site dir: ${config.sitePath} includes dir: ${config.includesPath} assets dir: ${config.assetsPath}' 
-  ' output:${config.outputPath}');
+  print(
+      'site dir: ${config.sitePath} includes dir: ${config.includesPath} assets dir: ${config.assetsPath}'
+      ' templates:${config.templatesPath} output:${config.outputPath}');
 
   final outputDir = Directory(config.outputPath);
   outputDir.createSync(recursive: true);
+
+  config = config.copyWith(
+    includesPath: p.join(config.sitePath, config.includesPath),
+    assetsPath: p.join(config.sitePath, config.assetsPath),
+    templatesPath: p.join(config.sitePath, config.templatesPath),
+  );
 
   final siteDir = Directory(config.sitePath);
   if (!siteDir.existsSync()) {
@@ -30,15 +38,16 @@ void main(List<String> arguments) async {
   }
 
   await processAllFiles(siteDir, config);
-  
-  copyStatic(config.sitePath, config.outputPath);
+
+  copyStatic(config.assetsPath, config.outputPath);
 
   if (config.preview) {
     final watcher = DirectoryWatcher(siteDir.path);
     final includesWatcher = DirectoryWatcher(config.includesPath);
     watcher.events.listen((event) {
       print("WATCH event:$event");
-      processFile(File(event.path), config.outputPath, config.includesPath);
+      processFile(File(event.path), config.outputPath, config.includesPath,
+          config.templatesPath);
     });
     includesWatcher.events.listen((event) async {
       print("INC WATCH event:$event");
@@ -52,9 +61,9 @@ void main(List<String> arguments) async {
 }
 
 Future<void> processAllFiles(Directory siteDir, PicositeConfig config) async {
-  final siteDirFiles = siteDir.listSync();
+  final siteDirFiles = Directory(p.joinAll([siteDir.path, 'pages'])).listSync();
   for (final f in siteDirFiles) {
-    await processFile(f, config.outputPath, config.includesPath);
-  }	
+    await processFile(
+        f, config.outputPath, config.includesPath, config.templatesPath);
+  }
 }
-

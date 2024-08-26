@@ -3,6 +3,7 @@ class PicositeConfig {
   final String outputPath;
   final String includesPath;
   final String assetsPath;
+  final String templatesPath;
   final bool preview;
 
   PicositeConfig({
@@ -11,14 +12,15 @@ class PicositeConfig {
     required this.preview,
     required this.includesPath,
     required this.assetsPath,
+    required this.templatesPath,
   });
 
-  PicositeConfig copyWith(
-      {
+  PicositeConfig copyWith({
     String? sitePath,
     String? outputPath,
     String? includesPath,
     String? assetsPath,
+    String? templatesPath,
     bool? preview,
   }) {
     return PicositeConfig(
@@ -26,6 +28,7 @@ class PicositeConfig {
       outputPath: outputPath ?? this.outputPath,
       includesPath: includesPath ?? this.includesPath,
       assetsPath: assetsPath ?? this.assetsPath,
+      templatesPath: templatesPath ?? this.templatesPath,
       preview: preview ?? this.preview,
     );
   }
