@@ -17,9 +17,11 @@ If you prefer, you can also make use of it from an installed Dart SDK using: `da
 
 ## Usage
 
-Picosite works by taking a set of markdown content files ("pages") in a given directory and transforming them into HTML and then inserting that HTML into a specified Handlebars template. The template applied to each page is specified in that markdown files YAML "frontmatter". Here is an example from Picosites own documentation index page (ie. the page you are reading now):
+Picosite works by taking a set of markdown content files ("pages") in a given directory and transforming them into HTML and then inserting that HTML into a specified Handlebars template. By default the markdown content files are expected to in a subdirectory of the site directory named `pages`.
 
-```markdown
+The template applied to each page is specified in that markdown files YAML "frontmatter". Here is an example from Picosites own documentation index page (ie. the page you are reading now):
+
+```
 ---
 title: Picosite Documentation
 template: standardpage
