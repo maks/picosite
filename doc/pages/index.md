@@ -1,3 +1,4 @@
+---
 title: Picosite Documentation
 template: standardpage
 ---
@@ -19,6 +20,7 @@ If you prefer, you can also make use of it from an installed Dart SDK using: `da
 Picosite works by taking a set of markdown content files ("pages") in a given directory and transforming them into HTML and then inserting that HTML into a specified Handlebars template. The template applied to each page is specified in that markdown files YAML "frontmatter". Here is an example from Picosites own documentation index page (ie. the page you are reading now):
 
 ```markdown
+---
 title: Picosite Documentation
 template: standardpage
 ---
@@ -33,6 +35,10 @@ Picosite can be run with no arguments given. In that case it will use default va
 Asset files such as css, js, images, etc that just need to copied across to the output can be placed in the assets subdirectory of the site directory and all the contents of that directory will be recursively copied to the output directory each time picosite is run.
 
 ### Data file, builtin variables and Handlebars
+
+## Previewing output
+
+Picosite can run in a preview mode, where it will serve the output folder via HTTP and watch for changes in the site directory and rebuild the output when it notices saved changes to files in the site directory: `picosite 
 
 TODO
 

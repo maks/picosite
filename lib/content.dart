@@ -26,34 +26,35 @@ Future<void> processFile(final FileSystemEntity f, final String outputPath,
   }
 }
 
-Future<String> processMarkdown(final String doc, final String title,
+Future<String> processMarkdown(final String markdownDoc, final String title,
     final String partialsPath, final String templatesPath) async {
   final mdTitlePattern = RegExp("^# (.*)");
-  String body = "";
-
-  // try to process any yaml front matter
-  var sections = doc.split("---");
-  if (sections.length != 3 && sections.length != 2) {
-    // try again with 4 dashes
-    sections = doc.split("----");
-  }
   Map frontMatter = {};
-  // front matter only delimited by trailing dashes line
-  if (sections.length == 2) {
-    frontMatter = y.loadYaml(sections[0]);
-    body = sections[1];
-  } // front matter  delimited by leading and trailing dashes line
-  else if (sections.length == 3) {
-    frontMatter = y.loadYaml(sections[1]);
-    body = sections[2];
+  String markdownBody = "";
+
+  // Regular expression to match the YAML front matter
+  final regex = RegExp(r'^---\n([\s\S]*?)\n---\n', multiLine: true);
+
+  final frontmatterMatch = regex.firstMatch(markdownDoc);
+  if (frontmatterMatch != null) {
+    // Extract YAML front matter
+    final yamlFrontMatter = frontmatterMatch.group(1);
+    if (yamlFrontMatter == null) {
+      throw Exception('No YAML front matter found.');
+    }
+    // Extract the remaining markdown content
+    markdownBody = markdownDoc.replaceFirst(regex, '');
+    print('YAML Front Matter:\n$yamlFrontMatter');
+    // print('\nMarkdown Content:\n$markdownWithoutFrontMatter');
+    frontMatter = y.loadYaml(yamlFrontMatter);
   } else {
-    print("no YAML frontmatter");
+    throw Exception('No YAML front matter found.');
   }
 
   Map docVariables = {};
   docVariables["header"] = "";
   docVariables["title"] = title;
-  final match = mdTitlePattern.firstMatch(body);
+  final match = mdTitlePattern.firstMatch(markdownBody);
   if (match != null) {
     docVariables["title"] = match[1]!;
   } else if (frontMatter["title"] != null) {
@@ -63,7 +64,7 @@ Future<String> processMarkdown(final String doc, final String title,
   }
   print("finished processing:$title");
 
-  docVariables['body'] = m.markdownToHtml(body);
+  docVariables['body'] = m.markdownToHtml(markdownBody);
 
   Template? partialsFileResolver(String name) {
     final partial = File(p.join(partialsPath, name)).readAsStringSync();
