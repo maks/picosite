@@ -9,10 +9,9 @@ Welcome Picosite, a *minimalist* static site generator.
 
 ## Installation
 
-Picosite is distributed as a single, stand along executable for Linux to make it easy to use on CI systems.
+Picosite is distributed as a single, stand along executables for [Linux, MacOS and Windows](https://github.com/maks/picosite/releases) to make it easy to use on your local computer and CI/CD systems.
 
-For use during developing site content, you can make use of it from an installed Dart SDK using:
-`dart pub global activate picosite`
+If you prefer, you can also make use of it from an installed Dart SDK using: `dart pub global activate picosite`
 
 
 ## Usage
