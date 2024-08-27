@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:args/args.dart';
 import 'package:picosite/config.dart';
 
-const String version = '0.0.1';
+const String version = '0.1.0';
 
 ArgParser buildParser() {
   return ArgParser()
@@ -21,6 +21,11 @@ ArgParser buildParser() {
       'assets',
       abbr: 'a',
       help: 'Directory containing site asset (static) files.',
+    )
+    ..addOption(
+      'templates',
+      abbr: 't',
+      help: 'Directory containing Handlebars template files.',
     )
     ..addOption(
       'output',
@@ -78,6 +83,10 @@ PicositeConfig handleArgs(arguments, PicositeConfig config) {
 
     if (results.wasParsed('assets')) {
       config = config.copyWith(assetsPath: results.option("assets"));
+    }
+
+    if (results.wasParsed('templates')) {
+      config = config.copyWith(templatesPath: results.option("templates"));
     }
 
     if (results.wasParsed('help')) {
