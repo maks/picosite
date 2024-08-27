@@ -1,3 +1,7 @@
-## 1.0.0
+## 0.1.0
 
-- Initial version.
+- Initial public release.
+
+## 0.0.1
+
+- Initial test release.
