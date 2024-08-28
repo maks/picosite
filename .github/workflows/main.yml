@@ -23,7 +23,7 @@ jobs:
       - run: mkdir output
       - run: dart pub get
       - run: dart compile exe bin/picosite.dart -v -o output/${{ matrix.output-name }}
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
-          name: native-executables
+          name: ${{ matrix.output-name }}
           path: output
