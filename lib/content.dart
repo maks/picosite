@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:io/io.dart';
+import 'package:markdown/markdown.dart';
 import 'package:mustache_template/mustache.dart';
 import 'package:path/path.dart' as p;
 import "package:markdown/markdown.dart" as m;
@@ -64,7 +65,18 @@ Future<String> processMarkdown(final String markdownDoc, final String title,
   }
   print("finished processing:$title");
 
-  docVariables['body'] = m.markdownToHtml(markdownBody);
+  docVariables['body'] = m.markdownToHtml(
+    markdownBody,
+    inlineSyntaxes: [
+      InlineHtmlSyntax(),
+    ],
+    blockSyntaxes: [
+      TableSyntax(),
+      FencedCodeBlockSyntax(),
+      HeaderWithIdSyntax(),
+      HorizontalRuleSyntax(),
+    ],
+  );
 
   Template? partialsFileResolver(String name) {
     final partial = File(p.join(partialsPath, name)).readAsStringSync();
