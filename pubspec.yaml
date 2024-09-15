@@ -1,6 +1,6 @@
 name: picosite
 description: A minimal static site generator with http preview server
-version: 0.1.0
+version: 0.2.0
 repository: https://github.com/maks/picosite
 
 environment:
