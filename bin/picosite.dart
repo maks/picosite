@@ -17,6 +17,7 @@ var config = PicositeConfig(
 );
 
 void main(List<String> arguments) async {
+  print(""); // blank like to separate output from cmd line
   config = handleArgs(arguments, config);
   print(
       'site dir: ${config.sitePath} includes dir: ${config.includesPath} assets dir: ${config.assetsPath}'
