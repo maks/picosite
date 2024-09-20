@@ -17,7 +17,7 @@ If you prefer, you can also make use of it from an installed Dart SDK using: `da
 
 ## Usage
 
-Picosite works by taking a set of markdown content files ("pages") in a given directory and transforming them into HTML and then inserting that HTML into a specified Handlebars template. By default the markdown content files are expected to in a subdirectory of the site directory named `pages`.
+Picosite works by taking a set of markdown content files ("pages") in a given directory and transforming them into HTML and then inserting that HTML into a specified Musta template. By default the markdown content files are expected to in a subdirectory of the site directory named `pages`.
 
 The template applied to each page is specified in that markdown files YAML "frontmatter". Here is an example from Picosites own documentation index page (ie. the page you are reading now):
 
@@ -36,13 +36,28 @@ Picosite can be run with no arguments given. In that case it will use default va
 
 Asset files such as css, js, images, etc that just need to copied across to the output can be placed in the assets subdirectory of the site directory and all the contents of that directory will be recursively copied to the output directory each time picosite is run.
 
+### Markdown support
+
+Apart from "regular" markdown, some "extensions" are supported:
+
+* Tables markup
+* Inline HTML
+* ID's are added to header elements (H1, H2, etc)
+
+
+### Handlebars Templates
+
+Picosite supports templates using [Handlebars](https://handlebarsjs.com/). Any variables defined in the YAML front matter of a markdown file are then available for use in the template using `{{ variablename }}``. 
+
+Likewise, include files placed in the includes folder can be used in templates using the Handlebars synatx of `{{> filename }}`.
+
 ### Data file, builtin variables and Handlebars
+
+In *future releases* Picosite will support providing user data to be referenced by Handlebars variables as well as providing builtin variables such as the current date, list of content files, etc.
 
 ## Previewing output
 
-Picosite can run in a preview mode, where it will serve the output folder via HTTP and watch for changes in the site directory and rebuild the output when it notices saved changes to files in the site directory: `picosite 
-
-TODO
+Picosite can run in a preview mode, where it will serve the output folder via HTTP and watch for changes in the site directory and rebuild the output when it notices saved changes to files in the site directory.
 
 ## Credits
 
