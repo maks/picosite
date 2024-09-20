@@ -2,8 +2,7 @@ import 'dart:io';
 
 import 'package:args/args.dart';
 import 'package:picosite/config.dart';
-
-const String version = '0.1.0';
+import 'version.dart';
 
 ArgParser buildParser() {
   return ArgParser()

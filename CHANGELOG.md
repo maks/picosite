@@ -1,3 +1,6 @@
+## 0.2.1
+- Tweak std output
+
 ## 0.2.0
 - Support for markdown extensions including: tables, inline html, heads with IDs, fenced code blocks
 
