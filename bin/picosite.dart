@@ -4,6 +4,7 @@ import 'package:picosite/config.dart';
 import 'package:picosite/content.dart';
 import 'package:picosite/pdfbuilder.dart';
 import 'package:picosite/previewserver.dart';
+import 'package:yaml/yaml.dart' as y;
 
 import 'package:path/path.dart' as p;
 import 'package:watcher/watcher.dart';
@@ -15,7 +16,7 @@ var config = PicositeConfig(
   assetsPath: 'assets',
   templatesPath: 'templates',
   preview: false,
-  pdf: false,
+  pdf: "pdf.yml",
 );
 
 void main(List<String> arguments) async {
@@ -40,11 +41,26 @@ void main(List<String> arguments) async {
     exit(1);
   }
 
-  final pdfBuilder = config.pdf ? Pdfbuilder("output.pdf") : null;
+  List<String>? pdfPages = [];
+  if (config.pdf.isNotEmpty) {
+    final pdfFile = File(config.pdf);
+    if (!pdfFile.existsSync()) {
+      print("pdf file missing!");
+      exit(1);
+    }
+
+    final pdfYaml = pdfFile.readAsStringSync();
+    Map? pdfConfig;
+    pdfConfig = y.loadYaml(pdfYaml);
+    pdfPages = (pdfConfig!["pages"] as List).cast<String>();
+    print("pdfpages: ${pdfPages.length}");
+  }
+
+  final pdfBuilder = pdfPages.isNotEmpty ? Pdfbuilder("output.pdf") : null;
 
   await processAllFiles(siteDir, config, pdfBuilder);
 
-  await copyStatic(config.assetsPath, config.outputPath);
+  // await copyStatic(config.assetsPath, config.outputPath);
 
   if (config.preview) {
     final watcher = DirectoryWatcher(siteDir.path);
@@ -64,14 +80,22 @@ void main(List<String> arguments) async {
     await p.start();
   }
 
-  await pdfBuilder?.createPDF(config.assetsPath);
+  await pdfBuilder?.createPDF(config.assetsPath, pdfPages);
 }
 
 Future<void> processAllFiles(
     Directory siteDir, PicositeConfig config, Pdfbuilder? pdfBuilder) async {
   final siteDirFiles = Directory(p.joinAll([siteDir.path, 'pages'])).listSync();
+  siteDirFiles.sort(sortByName);
   for (final f in siteDirFiles) {
     await processFile(f, config.outputPath, config.includesPath,
         config.templatesPath, pdfBuilder);
   }
+}
+
+//sort filesystementities by name
+int sortByName(FileSystemEntity a, FileSystemEntity b) {
+  return p
+      .basenameWithoutExtension(a.path)
+      .compareTo(p.basenameWithoutExtension(b.path));
 }

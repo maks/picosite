@@ -25,6 +25,7 @@ Future<void> processFile(
       title,
       includesPath,
       templatesPath,
+      name,
       pdfBuilder,
     );
 
@@ -39,6 +40,7 @@ Future<String> processMarkdown(
     final String title,
     final String partialsPath,
     final String templatesPath,
+    final String filename,
     final Pdfbuilder? pdfBuilder) async {
   final mdTitlePattern = RegExp("^# (.*)");
   Map frontMatter = {};
@@ -92,7 +94,8 @@ Future<String> processMarkdown(
     ],
   );
 
-  pdfBuilder?.addHTMLPage(docVariables['body']);
+  pdfBuilder?.addHTMLPage(
+      filename, docVariables["title"], docVariables['body']);
 
   Template? partialsFileResolver(String name) {
     final partial = File(p.join(partialsPath, name)).readAsStringSync();

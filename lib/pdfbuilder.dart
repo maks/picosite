@@ -3,16 +3,17 @@ import 'dart:io';
 import 'package:htmltopdfwidgets/htmltopdfwidgets.dart';
 
 class Pdfbuilder {
-  final List<String> _htmlContent = [];
+  final Map<String, String> _htmlContent = {};
   final String pdfOutputPath;
 
   Pdfbuilder(this.pdfOutputPath);
 
-  void addHTMLPage(String page) {
-    _htmlContent.add(page);
+  void addHTMLPage(String pagename, String title, String pagecontent) {
+    print("ad page: $pagename");
+    _htmlContent[pagename] = pagecontent;
   }
 
-  Future<void> createPDF(String assetspath) async {
+  Future<void> createPDF(String assetspath, List<String> pages) async {
     final markdownOutfile = File(pdfOutputPath);
     final markdownNewpdf = Document();
 
@@ -20,10 +21,13 @@ class Pdfbuilder {
 
     Directory.current = Directory(assetspath);
 
-    // for (var md in _markDownContent) {
-    for (var html in _htmlContent) {
+    print("==== BUILDING PDF ====");
+    print("$pages");
+
+    for (var page in pages) {
+      print("pdf page: $page");
       final List<Widget> markdownwidgets = await HTMLToPdf().convert(
-        html,
+        _htmlContent[page] ?? '',
       );
 
       markdownNewpdf.addPage(

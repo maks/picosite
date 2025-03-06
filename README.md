@@ -32,6 +32,19 @@ and then look in the created `output` directory, you will see the [documentation
 
 Looking in the `docs` folder serves as an example of how to use Picosite for your own content.
 
+### PDF Output
+
+PDF output is configured by supplying a yaml configuration file as the value of the `-d` command line parameter.
+Current supported options are:
+
+```yaml
+# list of files to include as multi-pages in the PDF, 
+# added to the PDF in the order specificed
+pages:
+    - page1.md
+    - page2.md
+
+```
 
 Run with the `-h` flag to get the traditional list of available options:
 
@@ -44,7 +57,7 @@ Usage: dart picosite.dart <flags> [arguments]
 -t, --templates    Directory containing Handlebars template files.
 -o, --output       Directory with processed output files.
 -p, --preview      Print this usage information.
--d, --pdf          Generate a PDF file.
+-d, --pdf          Generate a PDF using this config file.
 -h, --help         Print this usage information.
 -v, --verbose      Show additional command output.
     --version      Print the tool version.
