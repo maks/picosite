@@ -5,6 +5,7 @@ class PicositeConfig {
   final String assetsPath;
   final String templatesPath;
   final bool preview;
+  final bool pdf;
 
   PicositeConfig({
     required this.sitePath,
@@ -13,6 +14,7 @@ class PicositeConfig {
     required this.includesPath,
     required this.assetsPath,
     required this.templatesPath,
+    required this.pdf,
   });
 
   PicositeConfig copyWith({
@@ -22,6 +24,7 @@ class PicositeConfig {
     String? assetsPath,
     String? templatesPath,
     bool? preview,
+    bool? pdf,
   }) {
     return PicositeConfig(
       sitePath: sitePath ?? this.sitePath,
@@ -30,6 +33,7 @@ class PicositeConfig {
       assetsPath: assetsPath ?? this.assetsPath,
       templatesPath: templatesPath ?? this.templatesPath,
       preview: preview ?? this.preview,
+      pdf: pdf ?? this.pdf,
     );
   }
 }

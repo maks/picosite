@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:picosite/cli.dart';
 import 'package:picosite/config.dart';
 import 'package:picosite/content.dart';
+import 'package:picosite/pdfbuilder.dart';
 import 'package:picosite/previewserver.dart';
 
 import 'package:path/path.dart' as p;
@@ -14,6 +15,7 @@ var config = PicositeConfig(
   assetsPath: 'assets',
   templatesPath: 'templates',
   preview: false,
+  pdf: false,
 );
 
 void main(List<String> arguments) async {
@@ -38,9 +40,11 @@ void main(List<String> arguments) async {
     exit(1);
   }
 
-  await processAllFiles(siteDir, config);
+  final pdfBuilder = config.pdf ? Pdfbuilder("output.pdf") : null;
 
-  copyStatic(config.assetsPath, config.outputPath);
+  await processAllFiles(siteDir, config, pdfBuilder);
+
+  await copyStatic(config.assetsPath, config.outputPath);
 
   if (config.preview) {
     final watcher = DirectoryWatcher(siteDir.path);
@@ -48,23 +52,26 @@ void main(List<String> arguments) async {
     watcher.events.listen((event) {
       print("WATCH event:$event");
       processFile(File(event.path), config.outputPath, config.includesPath,
-          config.templatesPath);
+          config.templatesPath, null);
     });
     includesWatcher.events.listen((event) async {
       print("INC WATCH event:$event");
       // dont know which files use this particular partial so reprocess all
-      await processAllFiles(siteDir, config);
+      await processAllFiles(siteDir, config, pdfBuilder);
     });
 
     final p = PreviewServer("output");
     await p.start();
   }
+
+  await pdfBuilder?.createPDF(config.assetsPath);
 }
 
-Future<void> processAllFiles(Directory siteDir, PicositeConfig config) async {
+Future<void> processAllFiles(
+    Directory siteDir, PicositeConfig config, Pdfbuilder? pdfBuilder) async {
   final siteDirFiles = Directory(p.joinAll([siteDir.path, 'pages'])).listSync();
   for (final f in siteDirFiles) {
-    await processFile(
-        f, config.outputPath, config.includesPath, config.templatesPath);
+    await processFile(f, config.outputPath, config.includesPath,
+        config.templatesPath, pdfBuilder);
   }
 }

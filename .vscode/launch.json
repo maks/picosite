@@ -10,7 +10,7 @@
             "type": "dart",
             "args": [
                 "-s",
-                "../mydvds-picosite"
+                "../picosite/doc"
             ]
         }
     ]

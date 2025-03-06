@@ -6,8 +6,14 @@ import 'package:path/path.dart' as p;
 import "package:markdown/markdown.dart" as m;
 import 'package:yaml/yaml.dart' as y;
 
-Future<void> processFile(final FileSystemEntity f, final String outputPath,
-    final String includesPath, String templatesPath) async {
+import 'pdfbuilder.dart';
+
+Future<void> processFile(
+    final FileSystemEntity f,
+    final String outputPath,
+    final String includesPath,
+    String templatesPath,
+    Pdfbuilder? pdfBuilder) async {
   final name = p.basename(f.path);
   print("found input file: $name");
   if (p.extension(f.path).toLowerCase() == '.md') {
@@ -19,6 +25,7 @@ Future<void> processFile(final FileSystemEntity f, final String outputPath,
       title,
       includesPath,
       templatesPath,
+      pdfBuilder,
     );
 
     final outputFile = File(p.join(outputPath, "$title.html"));
@@ -27,8 +34,12 @@ Future<void> processFile(final FileSystemEntity f, final String outputPath,
   }
 }
 
-Future<String> processMarkdown(final String markdownDoc, final String title,
-    final String partialsPath, final String templatesPath) async {
+Future<String> processMarkdown(
+    final String markdownDoc,
+    final String title,
+    final String partialsPath,
+    final String templatesPath,
+    final Pdfbuilder? pdfBuilder) async {
   final mdTitlePattern = RegExp("^# (.*)");
   Map frontMatter = {};
   String markdownBody = "";
@@ -65,6 +76,9 @@ Future<String> processMarkdown(final String markdownDoc, final String title,
   }
   print("finished processing:$title");
 
+  // add md content to pdf if building a PDF
+  // pdfBuilder?.addMarkdownPage(markdownBody);
+
   docVariables['body'] = m.markdownToHtml(
     markdownBody,
     inlineSyntaxes: [
@@ -77,6 +91,8 @@ Future<String> processMarkdown(final String markdownDoc, final String title,
       HorizontalRuleSyntax(),
     ],
   );
+
+  pdfBuilder?.addHTMLPage(docVariables['body']);
 
   Template? partialsFileResolver(String name) {
     final partial = File(p.join(partialsPath, name)).readAsStringSync();
@@ -98,11 +114,10 @@ Future<String> processMarkdown(final String markdownDoc, final String title,
     partialResolver: partialsFileResolver,
   );
 
-  var rendered = template.renderString(docVariables);
-
+  final rendered = template.renderString(docVariables);
   return rendered;
 }
 
-void copyStatic(String input, String output) async {
+Future<void> copyStatic(String input, String output) async {
   return copyPath(input, output);
 }

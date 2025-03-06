@@ -38,6 +38,12 @@ ArgParser buildParser() {
       help: 'Print this usage information.',
     )
     ..addFlag(
+      'pdf',
+      abbr: 'd',
+      negatable: false,
+      help: 'Generate a PDF file.',
+    )
+    ..addFlag(
       'help',
       abbr: 'h',
       negatable: false,
@@ -70,6 +76,10 @@ PicositeConfig handleArgs(arguments, PicositeConfig config) {
     // Process the parsed arguments.
     if (results.wasParsed('preview')) {
       config = config.copyWith(preview: true);
+    }
+
+    if (results.wasParsed('pdf')) {
+      config = config.copyWith(pdf: true);
     }
 
     if (results.wasParsed('site')) {
