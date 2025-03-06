@@ -11,8 +11,9 @@ Picosite is published as a single, stand alone executable. You can get a copy of
 The basic use of Picosite is to run it from the command line, passing in the path to a `site` directory, containing a `pages` subdirectory with markdown content files. The markdown files are expected to have YAML frontmatter which at the very minimum specifies a template file in [Handlebars](https://handlebarsjs.com/) format which will then cause Picosite to create output based on the content using the specified template file in the `output` directory.
 
 For example if you run Picosite in the top level of this git repo using:
+
 ```
-picosite -s doc
+picosite -s doc -d
 
 Positional arguments: []
 site dir: doc includes dir: includes assets dir: assets templates:templates output:output
@@ -24,9 +25,12 @@ template: standardpage
 finished processing:index
 CWD:/home/maks/work/picosite
 wrote output to: output
+saved pdf: output.pdf
 ```
 
-and then look in the created `output` directory, you will see the [documentation for Picosite](doc/) itself processed into html output. Looking in the `docs` folder serves as an example of how to use Picosite for your own content.
+and then look in the created `output` directory, you will see the [documentation for Picosite](doc/) itself processed into html output. A basic PDF version of the content will also have been generated into `output.pdf`. 
+
+Looking in the `docs` folder serves as an example of how to use Picosite for your own content.
 
 
 Run with the `-h` flag to get the traditional list of available options:
@@ -40,6 +44,7 @@ Usage: dart picosite.dart <flags> [arguments]
 -t, --templates    Directory containing Handlebars template files.
 -o, --output       Directory with processed output files.
 -p, --preview      Print this usage information.
+-d, --pdf          Generate a PDF file.
 -h, --help         Print this usage information.
 -v, --verbose      Show additional command output.
     --version      Print the tool version.

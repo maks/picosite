@@ -3,9 +3,11 @@ title: Picosite Documentation
 template: standardpage
 ---
 
+![picosite logo](images/picosite-small.png)
+
 # Introduction
 
-Welcome Picosite, a *minimalist* static site generator.
+Welcome Picosite, a *minimalist* static site generator based on [markdown](#markdown-support) and [handlebars templates](#handlebars-templates).
 
 
 ## Installation
@@ -26,6 +28,8 @@ The template applied to each page is specified in that markdown files YAML "fron
 title: Picosite Documentation
 template: standardpage
 ---
+
+
 
 # Introduction
 ```
