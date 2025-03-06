@@ -94,9 +94,6 @@ Future<String> processMarkdown(
     ],
   );
 
-  pdfBuilder?.addHTMLPage(
-      filename, docVariables["title"], docVariables['body']);
-
   Template? partialsFileResolver(String name) {
     final partial = File(p.join(partialsPath, name)).readAsStringSync();
     return Template(partial);
@@ -116,6 +113,21 @@ Future<String> processMarkdown(
     htmlEscapeValues: false,
     partialResolver: partialsFileResolver,
   );
+
+  if (pdfBuilder != null) {
+    String templateText = File('$templatesPath/pdf.html').readAsStringSync();
+
+    final pdftemplate = Template(
+      templateText,
+      name: title,
+      htmlEscapeValues: false,
+      partialResolver: partialsFileResolver,
+    );
+
+    final rendered = pdftemplate.renderString(docVariables);
+
+    pdfBuilder.addHTMLPage(filename, docVariables["title"], rendered);
+  }
 
   final rendered = template.renderString(docVariables);
   return rendered;

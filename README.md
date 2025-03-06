@@ -34,6 +34,8 @@ Looking in the `docs` folder serves as an example of how to use Picosite for you
 
 ### PDF Output
 
+PDF out is enabled using the `-d` command line parameter.
+
 PDF output is configured by supplying a yaml configuration file as the value of the `-d` command line parameter.
 Current supported options are:
 
@@ -45,6 +47,11 @@ pages:
     - page2.md
 
 ```
+
+Currently the template used is hardcoded to be called `pdf.html` in the templates directory and **MUST** be present if PDF output is enabled.
+
+
+## Options
 
 Run with the `-h` flag to get the traditional list of available options:
 
