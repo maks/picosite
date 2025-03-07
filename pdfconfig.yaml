@@ -1,0 +1,9 @@
+title: picoTracker User Manual
+author: xiphonics
+
+styles:
+  code:
+    background-color: 0x9999FF
+
+pages:
+  - index.md

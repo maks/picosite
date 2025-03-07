@@ -10,7 +10,9 @@
             "type": "dart",
             "args": [
                 "-s",
-                "../picosite/doc"
+                "../picosite/doc",
+                "-d",
+                "../picosite/pdfconfig.yaml"
             ]
         }
     ]

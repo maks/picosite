@@ -154,9 +154,9 @@ packages:
     dependency: "direct main"
     description:
       path: "."
-      ref: support-local-image-files
-      resolved-ref: d4eb8afaebdd0c7c7973793e5fec62fa85deb8fa
-      url: "https://github.com/maks/htmltopdfwidgets"
+      ref: HEAD
+      resolved-ref: "3780ddd40149080d8b9c69effb96dd060ac757a6"
+      url: "https://github.com/alihassan143/htmltopdfwidgets"
     source: git
     version: "1.0.9"
   http:

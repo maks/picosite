@@ -41,22 +41,20 @@ void main(List<String> arguments) async {
     exit(1);
   }
 
-  List<String>? pdfPages = [];
+  Map? pdfConfig;
   if (config.pdf.isNotEmpty) {
     final pdfFile = File(config.pdf);
     if (!pdfFile.existsSync()) {
-      print("pdf file missing!");
+      print(
+          "PDF Config file missing:${pdfFile.path} CWD:${Directory.current.path}");
       exit(1);
     }
 
     final pdfYaml = pdfFile.readAsStringSync();
-    Map? pdfConfig;
     pdfConfig = y.loadYaml(pdfYaml);
-    pdfPages = (pdfConfig!["pages"] as List).cast<String>();
-    print("pdfpages: ${pdfPages.length}");
   }
 
-  final pdfBuilder = pdfPages.isNotEmpty ? Pdfbuilder("output.pdf") : null;
+  final pdfBuilder = pdfConfig != null ? Pdfbuilder("output.pdf") : null;
 
   await processAllFiles(siteDir, config, pdfBuilder);
 
@@ -80,7 +78,18 @@ void main(List<String> arguments) async {
     await p.start();
   }
 
-  await pdfBuilder?.createPDF(config.assetsPath, pdfPages);
+  if (pdfBuilder != null) {
+    final pdfPages = (pdfConfig!["pages"] as List).cast<String>();
+    print("pdfpages: ${pdfPages.length}");
+
+    await pdfBuilder.createPDF(
+      assetspath: config.assetsPath,
+      pages: pdfPages,
+      documentTitle: pdfConfig["title"],
+      documentAuthor: pdfConfig["author"],
+      styles: pdfConfig["styles"],
+    );
+  }
 }
 
 Future<void> processAllFiles(
