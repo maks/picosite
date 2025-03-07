@@ -40,6 +40,18 @@ PDF output is configured by supplying a yaml configuration file as the value of 
 Current supported options are:
 
 ```yaml
+title: picoTracker User Manual
+author: xiphonics
+
+styles:
+  code:
+    # background color for code blocks
+    background-color: 0x9999FF
+    # enable page numbers in footer, starting from this page number
+  show-page-numbers-from: 1
+
+# add table of contents page, insert it after given number of normal pages
+tocPagePosition: 0
 # list of files to include as multi-pages in the PDF, 
 # added to the PDF in the order specificed
 pages:
@@ -48,7 +60,7 @@ pages:
 
 ```
 
-Currently the template used is hardcoded to be called `pdf.html` in the templates directory and **MUST** be present if PDF output is enabled.
+The template used is  `${template}_pdf.html` in the templates directory and **MUST** be present if PDF output is enabled. Thus if in this repo, the template specified in markdown documents is `page` then the expected name for to be used in PDF generation will be `page_pdf.html`.
 
 
 ## Options

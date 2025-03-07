@@ -88,6 +88,7 @@ void main(List<String> arguments) async {
       documentTitle: pdfConfig["title"],
       documentAuthor: pdfConfig["author"],
       styles: pdfConfig["styles"],
+      tocPagePosition: pdfConfig["tocPagePosition"],
     );
   }
 }

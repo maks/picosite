@@ -19,9 +19,8 @@ dependencies:
   # htmltopdfwidgets: ^1.0.9
   htmltopdfwidgets:
     git: 
-      url: https://github.com/alihassan143/htmltopdfwidgets
-      # url: https://github.com/maks/htmltopdfwidgets
-      # ref: support-local-image-files
+      url: https://github.com/maks/htmltopdfwidgets
+      ref: header-support
   # htmltopdfwidgets:
   #   path: ../htmltopdfwidgets
 

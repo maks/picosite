@@ -154,9 +154,9 @@ packages:
     dependency: "direct main"
     description:
       path: "."
-      ref: HEAD
-      resolved-ref: "3780ddd40149080d8b9c69effb96dd060ac757a6"
-      url: "https://github.com/alihassan143/htmltopdfwidgets"
+      ref: header-support
+      resolved-ref: "4ab76e679cdeb4e8ebe728260bde80e1e9b01d8d"
+      url: "https://github.com/maks/htmltopdfwidgets"
     source: git
     version: "1.0.9"
   http:

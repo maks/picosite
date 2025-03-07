@@ -16,9 +16,10 @@ class Pdfbuilder {
   Future<void> createPDF({
     required String assetspath,
     required List<String> pages,
+    required Map styles,
     String? documentTitle,
     String? documentAuthor,
-    required Map styles,
+    int tocPagePosition = 0,
   }) async {
     final pdfOutfile = File(pdfOutputPath);
 
@@ -36,32 +37,10 @@ class Pdfbuilder {
     print("==== BUILDING PDF ====");
     print("$pages");
 
-    // TODO: TOC use needs to wait for htmltopdfwidgets package support for
-    // converting html heading elements to PDF Header widgets
-
-    // pdfDocument.addPage(
-    //   Page(
-    //     orientation: PageOrientation.portrait,
-    //     build: (context) {
-    //       return Column(
-    //         children: [
-    //           Center(
-    //             child: Text(
-    //               'Table of contents',
-    //               style: Theme.of(context).header0,
-    //             ),
-    //           ),
-    //           SizedBox(height: 20),
-    //           TableOfContent(),
-    //           Spacer(),
-    //         ],
-    //       );
-    //     },
-    //   ),
-    // );
-
     final codeBgColor = styles['code']['background-color'];
+    final showPageNumbersFromPage = styles['show-page-numbers-from'];
 
+    int pageCount = 0;
     for (var page in pages) {
       print("pdf page: $page");
       final List<Widget> markdownwidgets = await HTMLToPdf().convert(
@@ -71,6 +50,10 @@ class Pdfbuilder {
         ),
       );
 
+      if (tocPagePosition == pageCount) {
+        _addTOCPage(pdfDocument);
+      }
+
       pdfDocument.addPage(
         MultiPage(
           maxPages: 50,
@@ -78,13 +61,56 @@ class Pdfbuilder {
           build: (context) {
             return markdownwidgets;
           },
+          footer: (Context context) {
+            if (showPageNumbersFromPage != null &&
+                context.pageNumber > showPageNumbersFromPage) {
+              return Container(
+                alignment: Alignment.centerRight,
+                margin: const EdgeInsets.only(top: 1.0 * PdfPageFormat.cm),
+                child: Text(
+                  '${context.pageNumber}',
+                  style: Theme.of(context)
+                      .defaultTextStyle
+                      .copyWith(color: PdfColors.grey),
+                ),
+              );
+            } else {
+              return Container();
+            }
+          },
         ),
       );
+      pageCount++;
     }
 
     Directory.current = currentCWD;
 
     await pdfOutfile.writeAsBytes(await pdfDocument.save());
     print("saved pdf: $pdfOutputPath");
+  }
+
+  void _addTOCPage(Document pdfDocument) {
+    // This is using forked version of the htmltopdfwidgets package
+    // https://github.com/maks/htmltopdfwidgets
+    pdfDocument.addPage(
+      Page(
+        orientation: PageOrientation.portrait,
+        build: (context) {
+          return Column(
+            children: [
+              Center(
+                child: Text(
+                  'Table of contents',
+                  style: Theme.of(context).header0,
+                ),
+              ),
+              SizedBox(height: 20),
+              TableOfContent(),
+              Spacer(),
+            ],
+          );
+        },
+      ),
+    );
   }
 }

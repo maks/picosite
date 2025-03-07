@@ -115,7 +115,8 @@ Future<String> processMarkdown(
   );
 
   if (pdfBuilder != null) {
-    String templateText = File('$templatesPath/pdf.html').readAsStringSync();
+    String templateText =
+        File('$templatesPath/${templateName}_pdf.html').readAsStringSync();
 
     final pdftemplate = Template(
       templateText,
