@@ -5,7 +5,7 @@ class PicositeConfig {
   final String assetsPath;
   final String templatesPath;
   final bool preview;
-  final bool pdf;
+  final String pdf;
 
   PicositeConfig({
     required this.sitePath,
@@ -24,7 +24,7 @@ class PicositeConfig {
     String? assetsPath,
     String? templatesPath,
     bool? preview,
-    bool? pdf,
+    String? pdf,
   }) {
     return PicositeConfig(
       sitePath: sitePath ?? this.sitePath,

@@ -37,11 +37,10 @@ ArgParser buildParser() {
       negatable: false,
       help: 'Print this usage information.',
     )
-    ..addFlag(
+    ..addOption(
       'pdf',
       abbr: 'd',
-      negatable: false,
-      help: 'Generate a PDF file.',
+      help: 'Generate a PDF using this config file.',
     )
     ..addFlag(
       'help',
@@ -79,7 +78,7 @@ PicositeConfig handleArgs(arguments, PicositeConfig config) {
     }
 
     if (results.wasParsed('pdf')) {
-      config = config.copyWith(pdf: true);
+      config = config.copyWith(pdf: results.option("pdf"));
     }
 
     if (results.wasParsed('site')) {

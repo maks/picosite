@@ -1,6 +1,6 @@
 ---
 title: Picosite Documentation
-template: standardpage
+template: page
 ---
 
 ![picosite logo](images/picosite-small.png)
@@ -29,10 +29,10 @@ title: Picosite Documentation
 template: standardpage
 ---
 
-
-
 # Introduction
+
 ```
+
 
 The template file is expected to be named with a html extension (`standardpage.html`) and Picosite will look for it in the `templates` subdirectory of the site directory or the path specificed with the `templates` command line argument (`-t`).
 
