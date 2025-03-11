@@ -58,7 +58,7 @@ void main(List<String> arguments) async {
 
   await processAllFiles(siteDir, config, pdfBuilder);
 
-  // await copyStatic(config.assetsPath, config.outputPath);
+  await copyStatic(config.assetsPath, config.outputPath);
 
   if (config.preview) {
     final watcher = DirectoryWatcher(siteDir.path);

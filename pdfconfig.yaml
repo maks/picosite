@@ -6,8 +6,9 @@ styles:
     background-color: 0x9999FF
   show-page-numbers-from: 1
 
-tocPagePosition: 0
+tocPagePosition: 1
 
 pages:
+  - cover.md
   - index.md
   - 2ndpage.md

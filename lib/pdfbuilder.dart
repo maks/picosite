@@ -19,7 +19,7 @@ class Pdfbuilder {
     required Map styles,
     String? documentTitle,
     String? documentAuthor,
-    int tocPagePosition = 0,
+    int? tocPagePosition = 0,
   }) async {
     final pdfOutfile = File(pdfOutputPath);
 
@@ -35,14 +35,14 @@ class Pdfbuilder {
     Directory.current = Directory(assetspath);
 
     print("==== BUILDING PDF ====");
-    print("$pages");
+    print("Pages List: $pages");
 
     final codeBgColor = styles['code']['background-color'];
     final showPageNumbersFromPage = styles['show-page-numbers-from'];
 
     int pageCount = 0;
     for (var page in pages) {
-      print("pdf page: $page");
+      print("converting HTML to PDF page: $page");
       final List<Widget> markdownwidgets = await HTMLToPdf().convert(
         _htmlContent[page] ?? '',
         tagStyle: HtmlTagStyle(
@@ -56,7 +56,6 @@ class Pdfbuilder {
 
       pdfDocument.addPage(
         MultiPage(
-          maxPages: 50,
           pageFormat: PdfPageFormat.a4,
           build: (context) {
             return markdownwidgets;

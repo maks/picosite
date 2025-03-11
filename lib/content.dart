@@ -78,9 +78,6 @@ Future<String> processMarkdown(
   }
   print("finished processing:$title");
 
-  // add md content to pdf if building a PDF
-  // pdfBuilder?.addMarkdownPage(markdownBody);
-
   docVariables['body'] = m.markdownToHtml(
     markdownBody,
     inlineSyntaxes: [
@@ -115,6 +112,7 @@ Future<String> processMarkdown(
   );
 
   if (pdfBuilder != null) {
+    print("PDF template:$templatesPath/${templateName}_pdf.html");
     String templateText =
         File('$templatesPath/${templateName}_pdf.html').readAsStringSync();
 
