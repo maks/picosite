@@ -1,0 +1,31 @@
+<!doctype html>
+
+<html lang="en">
+
+{{> header }}
+
+<body>
+    <div class="navbar clear nav-top">
+        <div class="row content">
+            <a href="#"><img class="logo" src="images/logo.svg"></a>
+            <a class="right" style="text-decoration: underline;" href="https://github.com/maks/picosite">
+                <i class="fas fa-book"></i>&nbsp; {{ title }}</a>
+        </div>
+    </div>
+
+    <div class="container clear">
+        <div class="row wrapper">
+
+            {{> sidepanel }}
+
+            <div class="right-col">
+
+                 {{ body }}
+
+                <div class="doublespace"></div>
+                <div class="divider" style="width:24%; margin:30px 0;"></div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
