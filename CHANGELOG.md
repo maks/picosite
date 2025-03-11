@@ -1,3 +1,6 @@
+## 0.3.0
+- PDF support inc separate templates for pdfs, TOC, custom fonts
+
 ## 0.2.1
 - Tweak std output
 
