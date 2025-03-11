@@ -3,9 +3,7 @@ title: Picosite Documentation
 template: page
 ---
 
-![picosite logo](images/picosite-small.png)
-
-# Introduction
+## Introduction
 
 Welcome Picosite, a *minimalist* static site generator based on [markdown](#markdown-support) and [handlebars templates](#handlebars-templates).
 

@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:htmltopdfwidgets/htmltopdfwidgets.dart';
 
@@ -39,6 +40,14 @@ class Pdfbuilder {
 
     final codeBgColor = styles['code']['background-color'];
     final showPageNumbersFromPage = styles['show-page-numbers-from'];
+    final ttfFontPath = styles['ttf-font-path'];
+
+    Font? customFont;
+    if (ttfFontPath != null) {
+      final fontbytes =
+          File('${Directory.current.path}/$ttfFontPath').readAsBytesSync();
+      customFont = Font.ttf(ByteData.sublistView(fontbytes));
+    }
 
     int pageCount = 0;
     for (var page in pages) {
@@ -57,6 +66,11 @@ class Pdfbuilder {
       pdfDocument.addPage(
         MultiPage(
           pageFormat: PdfPageFormat.a4,
+          theme: customFont != null
+              ? ThemeData.withFont(
+                  base: customFont,
+                )
+              : null,
           build: (context) {
             return markdownwidgets;
           },
@@ -70,7 +84,7 @@ class Pdfbuilder {
                   '${context.pageNumber}',
                   style: Theme.of(context)
                       .defaultTextStyle
-                      .copyWith(color: PdfColors.grey),
+                      .copyWith(color: PdfColors.grey, font: customFont),
                 ),
               );
             } else {

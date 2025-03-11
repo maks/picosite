@@ -49,6 +49,8 @@ styles:
     background-color: 0x9999FF
     # enable page numbers in footer, starting from this page number
   show-page-numbers-from: 1
+  # path from inside assets dir
+  ttf-font-path: fonts/Exo2-Regular.ttf
 
 # add table of contents page, insert it after given number of normal pages
 tocPagePosition: 0

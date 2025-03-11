@@ -1,6 +1,6 @@
 ---
-title: 
+title: picosite manual
 template: cover
 ---
 
-![picosite logo](images/pT-buttonMap-long.png)
+![picosite logo](images/picosite-small.png)
