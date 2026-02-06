@@ -47,10 +47,54 @@ styles:
   code:
     # background color for code blocks
     background-color: 0x9999FF
-    # enable page numbers in footer, starting from this page number
   show-page-numbers-from: 1
   # path from inside assets dir
   ttf-font-path: fonts/Exo2-Regular.ttf
+  pdf:
+    # paragraph margin bottom (points)
+    paragraph_margin_bottom: 10
+    # list margin left (points)
+    list_margin_left: 18
+    # list margin bottom (points)
+    list_margin_bottom: 10
+    # h1 bottom margin (points)
+    h1_margin_bottom: 12
+    # h1 font size (points)
+    h1_font_size: 22
+    # h1 color (hex or int)
+    h1_color: "#222222"
+    # h1 font weight (normal|bold|400|700)
+    h1_font_weight: bold
+
+    # inline code styling (text only; no padding/border)
+    inline_code_text_color: "#222222"
+    inline_code_background_color: "#EEEEEE"
+    inline_code_border_color: "#CCCCCC"
+    inline_code_border_width: 1
+    inline_code_padding: 2
+
+    # inline class styles for spans like <span class="key">...</span>
+    class_styles:
+      key:
+        text_color: "#222222"
+        background_color: "#EEEEEE"
+        border_color: "#CCCCCC"
+        border_width: 1
+        padding: 2
+
+    # block class styles for elements like <div class="note">...</div>
+    block_class_styles:
+      note:
+        text_color: "#222222"
+        background_color: "#F9F9F9"
+        border_color: "#CCCCCC"
+        border_width: 1
+        padding: 6
+        margin: 6
+        border_radius: 4
+        font_size: 12
+        font_weight: normal
+        font_style: normal
 
 # add table of contents page, insert it after given number of normal pages
 tocPagePosition: 0
@@ -63,6 +107,72 @@ pages:
 ```
 
 The template used is  `${template}_pdf.html` in the templates directory and **MUST** be present if PDF output is enabled. Thus if in this repo, the template specified in markdown documents is `page` then the expected name for to be used in PDF generation will be `page_pdf.html`.
+
+#### PDF Styling Reference
+
+All PDF styling lives under `styles:` in the pdf config file. The `pdf:` section is optional and lets you tune margins, headings, and inline styles used by the PDF renderer.
+
+Supported keys:
+
+- `styles.code.background-color`: Background color for code blocks.
+- `styles.show-page-numbers-from`: Enable page numbers in the footer starting from this page number (1-based).
+- `styles.ttf-font-path`: Path (relative to the assets directory) to a TTF font used as the default PDF font.
+- `styles.pdf.paragraph_margin_bottom`: Space after paragraphs, in points.
+- `styles.pdf.list_margin_left`: Left indent for lists, in points.
+- `styles.pdf.list_margin_bottom`: Space after lists, in points.
+- `styles.pdf.h1_margin_bottom`: Space after H1, in points.
+- `styles.pdf.h1_font_size`: H1 font size in points.
+- `styles.pdf.h1_color`: H1 text color (`#RRGGBB`, `#AARRGGBB`, or `0xAARRGGBB` int).
+- `styles.pdf.h1_font_weight`: `normal` or `bold` (or numeric string like `400` / `700`).
+- `styles.pdf.inline_code_text_color`: Inline code text color.
+- `styles.pdf.inline_code_background_color`: Inline code background color.
+- `styles.pdf.inline_code_border_color`: Inline code border color (currently not rendered for inline code).
+- `styles.pdf.inline_code_border_width`: Inline code border width (currently not rendered for inline code).
+- `styles.pdf.inline_code_padding`: Inline code padding (currently not rendered for inline code).
+- `styles.pdf.class_styles`: Inline class styles for `<span class="...">` elements.
+- `styles.pdf.block_class_styles`: Block class styles for elements like `<div class="...">`.
+
+Notes:
+- Inline code is rendered as plain text for correct baseline alignment. Background color is supported; borders and padding are currently ignored.
+- Colors accept either hex strings (`#RRGGBB` / `#AARRGGBB`) or integer literals like `0xAARRGGBB`.
+
+#### Callout Example
+
+Here is an example that uses HTML with classes to render “callout” blocks in the PDF:
+
+```html
+<div class="callout callout-note">
+  <table class="callout-table">
+    <tr>
+      <td class="callout-icon" width="40"><img src="image/pico-sad.png" alt="Note" width="30" height="30" /></td>
+      <td class="callout-text"><em>Note:</em> The tips below are community-sourced and may describe workflows that depend on instrument or project setup.</td>
+    </tr>
+  </table>
+</div>
+```
+
+To style these in PDF output, use `styles.pdf.block_class_styles` entries. Example:
+
+```yaml
+styles:
+  pdf:
+    block_class_styles:
+      callout:
+        background_color: "#F7F7F7"
+        border_color: "#CCCCCC"
+        border_width: 1
+        padding: 6
+        margin: 6
+        border_radius: 4
+      callout-note:
+        border_color: "#4A90E2"
+      callout-warn:
+        border_color: "#D0021B"
+      callout-text:
+        font_size: 12
+```
+
+![screenshot](images/pdf-callout-tipstricks.png)
 
 
 ## Options
