@@ -42,7 +42,7 @@ void main(List<String> arguments) async {
   }
 
   Map? pdfConfig;
-  if (config.pdf.isNotEmpty) {
+  if (!config.preview && config.pdf.isNotEmpty) {
     final pdfFile = File(config.pdf);
     if (!pdfFile.existsSync()) {
       print(
@@ -54,7 +54,8 @@ void main(List<String> arguments) async {
     pdfConfig = y.loadYaml(pdfYaml);
   }
 
-  final pdfBuilder = pdfConfig != null ? Pdfbuilder("output.pdf") : null;
+  final pdfBuilder =
+      (!config.preview && pdfConfig != null) ? Pdfbuilder("output.pdf") : null;
 
   await processAllFiles(siteDir, config, pdfBuilder);
 
@@ -71,7 +72,7 @@ void main(List<String> arguments) async {
     includesWatcher.events.listen((event) async {
       print("INC WATCH event:$event");
       // dont know which files use this particular partial so reprocess all
-      await processAllFiles(siteDir, config, pdfBuilder);
+      await processAllFiles(siteDir, config, null);
     });
 
     final p = PreviewServer("output");
