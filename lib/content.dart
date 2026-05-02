@@ -86,6 +86,9 @@ Future<String> processMarkdown(
   print("finished processing:$title");
 
   // Pre-format date values if present in frontmatter
+  docVariables['date_iso'] = '';
+  docVariables['date_long'] = '';
+  if (frontMatter['date'] != null) {
   if (frontMatter['date'] != null) {
     try {
       final dateStr = frontMatter['date'].toString();
