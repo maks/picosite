@@ -34,13 +34,16 @@ void main(List<String> arguments) async {
     outputDir.createSync(recursive: true);
   }
 
+  // Make paths absolute relative to site
   config = config.copyWith(
     includesPath: p.join(config.sitePath, config.includesPath),
     assetsPath: p.join(config.sitePath, config.assetsPath),
     templatesPath: p.join(config.sitePath, config.templatesPath),
     dataPath: p.join(config.sitePath, config.dataPath),
-    listingsPath: p.join(Directory.current.path, config.listingsPath),
   );
+
+  // Load listings from CWD (not inside site directory)
+  final listingsPath = config.listingsPath;
 
   final siteDir = Directory(config.sitePath);
   if (!siteDir.existsSync()) {
@@ -50,19 +53,15 @@ void main(List<String> arguments) async {
 
   // Load data files and listings before processing pages
   final dataFiles = loadAllDataFiles(config.dataPath);
-  final listings = loadAllListings(config.listingsPath);
+  final listings = loadAllListings(listingsPath);
 
   Map? pdfConfig;
   if (!config.preview && config.pdf.isNotEmpty) {
     final pdfFile = File(config.pdf);
-    if (!pdfFile.existsSync()) {
-      print(
-          "PDF Config file missing:${pdfFile.path} CWD:${Directory.current.path}");
-      exit(1);
+    if (pdfFile.existsSync()) {
+      final pdfYaml = pdfFile.readAsStringSync();
+      pdfConfig = y.loadYaml(pdfYaml);
     }
-
-    final pdfYaml = pdfFile.readAsStringSync();
-    pdfConfig = y.loadYaml(pdfYaml);
   }
 
   final pdfBuilder =
@@ -87,10 +86,10 @@ void main(List<String> arguments) async {
   if (config.preview) {
     final watcher = DirectoryWatcher(siteDir.path);
     final includesWatcher = DirectoryWatcher(config.includesPath);
-    watcher.events.listen((event) {
+    watcher.events.listen((event) async {
       print("WATCH event:$event");
       // For now, we just process the file if it exists in our list
-      processAllFiles(siteDir, config, null,
+      await processAllFiles(siteDir, config, null,
           dataFiles: dataFiles, listings: listings);
     });
     includesWatcher.events.listen((event) async {
@@ -102,7 +101,7 @@ void main(List<String> arguments) async {
           dataFiles: newDataFiles, listings: newListings);
     });
 
-    final p = PreviewServer("output");
+    final p = PreviewServer(config.outputPath);
     await p.start();
   }
 
