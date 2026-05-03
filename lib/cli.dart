@@ -97,6 +97,10 @@ PicositeConfig handleArgs(arguments, PicositeConfig config) {
       config = config.copyWith(templatesPath: results.option("templates"));
     }
 
+    if (results.wasParsed('output')) {
+      config = config.copyWith(outputPath: results.option("output"));
+    }
+
     if (results.wasParsed('help')) {
       printUsage(argParser);
       exit(0);
