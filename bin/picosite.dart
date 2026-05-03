@@ -30,7 +30,9 @@ void main(List<String> arguments) async {
       ' data:${config.dataPath} listings:${config.listingsPath}');
 
   final outputDir = Directory(config.outputPath);
-  outputDir.createSync(recursive: true);
+  if (!outputDir.existsSync()) {
+    outputDir.createSync(recursive: true);
+  }
 
   config = config.copyWith(
     includesPath: p.join(config.sitePath, config.includesPath),
@@ -66,8 +68,19 @@ void main(List<String> arguments) async {
   final pdfBuilder =
       (!config.preview && pdfConfig != null) ? Pdfbuilder("output.pdf") : null;
 
-  await processAllFiles(siteDir, config, pdfBuilder,
-      dataFiles: dataFiles, listings: listings);
+  final pagesDir = Directory(p.joinAll([siteDir.path, 'pages']));
+  final List<FileSystemEntity> siteDirFiles = [];
+  if (pagesDir.existsSync()) {
+    siteDirFiles.addAll(pagesDir.listSync(recursive: true));
+  }
+  siteDirFiles.sort(sortByName);
+  for (final f in siteDirFiles) {
+    if (f is File && p.extension(f.path).toLowerCase() == '.md') {
+      await processFile(f, p.join(siteDir.path, 'pages'), config.outputPath, config.includesPath,
+          config.templatesPath, pdfBuilder,
+          dataFiles: dataFiles, listings: listings);
+    }
+  }
 
   await copyStatic(config.assetsPath, config.outputPath);
 
@@ -76,8 +89,8 @@ void main(List<String> arguments) async {
     final includesWatcher = DirectoryWatcher(config.includesPath);
     watcher.events.listen((event) {
       print("WATCH event:$event");
-      processFile(File(event.path), config.outputPath, config.includesPath,
-          config.templatesPath, null,
+      // For now, we just process the file if it exists in our list
+      processAllFiles(siteDir, config, null,
           dataFiles: dataFiles, listings: listings);
     });
     includesWatcher.events.listen((event) async {
@@ -101,10 +114,10 @@ void main(List<String> arguments) async {
     await pdfBuilder.createPDF(
       assetspath: config.assetsPath,
       pages: pdfPages,
-      documentTitle: pdfConfig["title"],
-      documentAuthor: pdfConfig["author"],
-      styles: pdfConfig["styles"],
-      tocPagePosition: pdfConfig["tocPagePosition"],
+      documentTitle: (pdfConfig["title"] as String?) ?? "Manichord",
+      documentAuthor: (pdfConfig["author"] as String?) ?? "Maksim Lin",
+      styles: (pdfConfig["styles"] as Map?) ?? <String, dynamic>{},
+      tocPagePosition: (pdfConfig["tocPagePosition"] as int?) ?? 0,
     );
   }
 }
@@ -112,12 +125,18 @@ void main(List<String> arguments) async {
 Future<void> processAllFiles(Directory siteDir, PicositeConfig config,
     Pdfbuilder? pdfBuilder,
     {Map? dataFiles = const {}, Map? listings = const {}}) async {
-  final siteDirFiles = Directory(p.joinAll([siteDir.path, 'pages'])).listSync();
+  final pagesDir = Directory(p.joinAll([siteDir.path, 'pages']));
+  final List<FileSystemEntity> siteDirFiles = [];
+  if (pagesDir.existsSync()) {
+    siteDirFiles.addAll(pagesDir.listSync(recursive: true));
+  }
   siteDirFiles.sort(sortByName);
   for (final f in siteDirFiles) {
-    await processFile(f, config.outputPath, config.includesPath,
-        config.templatesPath, pdfBuilder,
-        dataFiles: dataFiles, listings: listings);
+    if (f is File && p.extension(f.path).toLowerCase() == '.md') {
+      await processFile(f, p.join(siteDir.path, 'pages'), config.outputPath, config.includesPath,
+          config.templatesPath, pdfBuilder,
+          dataFiles: dataFiles, listings: listings);
+    }
   }
 }
 

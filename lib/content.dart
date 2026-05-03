@@ -11,6 +11,7 @@ import 'pdfbuilder.dart';
 
 Future<void> processFile(
     final FileSystemEntity f,
+    final String pagesBasePath,
     final String outputPath,
     final String includesPath,
     String templatesPath,
@@ -34,9 +35,23 @@ Future<void> processFile(
       listings: listings,
     );
 
-    final outputFile = File(p.join(outputPath, "$title.html"));
+    // Compute relative path from pages base directory to preserve directory structure
+    final relativePath = p.relative(f.path, from: pagesBasePath);
+    final relativeDir = p.dirname(relativePath);
+    final relativeBase = p.basenameWithoutExtension(relativePath);
+    final outputFileName = "$relativeBase.html";
+    
+    // Create the target output directory if it doesn't exist (normalize to avoid ./issues)
+    final outputDir = p.normalize(p.join(outputPath, relativeDir));
+    final dir = Directory(outputDir);
+    if (!dir.existsSync()) {
+      dir.createSync(recursive: true);
+      print("created output directory: $outputDir");
+    }
+    
+    final outputFile = File(p.join(outputDir, outputFileName));
     outputFile.writeAsStringSync(html);
-    print("wrote output to: $outputPath");
+    print("wrote output to: ${outputFile.path}");
   }
 }
 
@@ -69,26 +84,20 @@ Future<String> processMarkdown(
     print('YAML Front Matter:\n$yamlFrontMatter');
     frontMatter = y.loadYaml(yamlFrontMatter);
   } else {
-    throw Exception('No YAML front matter found.');
+    // If no frontmatter, use the filename as title
+    frontMatter = {
+      'title': title,
+      'template': 'basic_page',
+    };
   }
 
   Map docVariables = {};
   docVariables["header"] = "";
-  docVariables["title"] = title;
-  final match = mdTitlePattern.firstMatch(markdownBody);
-  if (match != null) {
-    docVariables["title"] = match[1]!;
-  } else if (frontMatter["title"] != null) {
-    docVariables["title"] = frontMatter["title"];
-  } else {
-    docVariables["header"] = "<h1>$title</h1>\n";
-  }
-  print("finished processing:$title");
+  docVariables["title"] = frontMatter["title"] ?? title;
 
   // Pre-format date values if present in frontmatter
   docVariables['date_iso'] = '';
   docVariables['date_long'] = '';
-  if (frontMatter['date'] != null) {
   if (frontMatter['date'] != null) {
     try {
       final dateStr = frontMatter['date'].toString();
@@ -123,13 +132,17 @@ Future<String> processMarkdown(
   // Add _lists access for content listings (e.g., {{#_lists.blog_posts}})
   docVariables['_lists'] = listings ?? {};
 
+  // Pass all other frontmatter variables into the template (e.g., {{# projects }})
+  docVariables.addAll(frontMatter);
+
   Template? partialsFileResolver(String name) {
     final partial = File(p.join(partialsPath, name)).readAsStringSync();
     return Template(partial);
   }
 
   // find template to use for this page
-  String templateName = frontMatter['template'] ?? '';
+  String templateName = frontMatter['template'] ?? 'default';
+  if (templateName.isEmpty) templateName = 'default';
 
   print("CWD:${Directory.current.path}");
 
@@ -246,6 +259,11 @@ List<Map> _loadListingItems(String basePath, String filter, String? sortBy) {
         // Create mutable copy to avoid modifying unmodifiable maps
         final item = Map.from(frontmatter);
         item['path'] = file.path;
+        item['filename'] = p.basenameWithoutExtension(file.path);
+        
+        // Ensure standard fields have defaults if missing (e.g. 'alt', 'img')
+        item['alt'] = item['alt'] ?? '';
+        item['img'] = item['img'] ?? '';
         
         // Pre-format dates for listing items
         if (item['date'] != null) {

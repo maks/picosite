@@ -38,11 +38,12 @@ class Pdfbuilder {
     print("==== BUILDING PDF ====");
     print("Pages List: $pages");
 
-    final codeBgColor = styles['code']['background-color'];
-    final showPageNumbersFromPage = styles['show-page-numbers-from'];
-    final ttfFontPath = styles['ttf-font-path'];
-    final Map pdfStyles =
-        (styles['pdf'] is Map) ? (styles['pdf'] as Map) : {};
+    final Map? codeStyle = styles['code'] as Map?;
+    final int codeBgColor = (codeStyle?['background-color'] as dynamic?)?.toInt() ?? 0xffffff;
+    final int? showPageNumbersFromPage = (styles['show-page-numbers-from'] as dynamic?)?.toInt();
+    final String? ttfFontPath = styles['ttf-font-path'] as String?;
+    final Map? rawPdfStyles = styles['pdf'] as Map?;
+    final Map pdfStyles = rawPdfStyles ?? <String, dynamic>{};
 
     Font? customFont;
     if (ttfFontPath != null) {
