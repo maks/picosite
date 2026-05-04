@@ -24,6 +24,13 @@ jobs:
       - run: dart pub get
       - run: dart tools/setversion.dart
       - run: dart compile exe bin/picosite.dart -v -o output/${{ matrix.output-name }}
+
+      - name: Ad-hoc sign macOS binary
+        if: matrix.os == 'macOS-latest'
+        # On modern macOS unsigned Mach-O binaries are refused by the kernel.
+        # --sign - performs an ad-hoc signature (no certificate needed).
+        run: codesign --sign - output/${{ matrix.output-name }}
+
       - uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.output-name }}
