@@ -1,3 +1,8 @@
+## 1.0.2
+
+- Support for content listings: generate dynamic listings of content from site files
+- Structured data in templates: access structured frontmatter and site metadata in Handlebars templates
+
 ## 0.3.0
 - PDF support inc separate templates for pdfs, TOC, custom fonts
 

@@ -172,7 +172,7 @@ styles:
         font_size: 12
 ```
 
-![screenshot](images/pdf-callout-tipstricks.png)
+
 
 
 ## Options

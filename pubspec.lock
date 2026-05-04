@@ -158,7 +158,7 @@ packages:
     description:
       path: "packages/htmltopdfwidgets"
       ref: add-headers-and-styles
-      resolved-ref: "68698fd0737f433544704eb84568ac2927194c58"
+      resolved-ref: "20f332f0d1cbae26428093406e1612ca99512fff"
       url: "https://github.com/maks/htmltopdfwidgets"
     source: git
     version: "2.0.1"
