@@ -1,0 +1,3 @@
+path: "picosite-test/site/pages/posts"
+filter: "*.md"
+sort_by: date DESC
