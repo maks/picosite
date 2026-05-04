@@ -8,18 +8,31 @@ jobs:
 
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest, macOS-latest]
         include:
           - os: ubuntu-latest
             output-name: picosite-linux
+            dart-arch: x64
           - os: macOS-latest
             output-name: picosite-mac
+            dart-arch: arm64
           - os: windows-latest
             output-name: picosite-windows.exe
+            dart-arch: x64
 
     steps:
-      - uses: actions/checkout@v1
-      - uses: DanTup/gh-actions/setup-dart@master
+      - uses: actions/checkout@v4
+
+      - uses: dart-lang/setup-dart@v1
+        with:
+          sdk: stable
+          architecture: ${{ matrix.dart-arch }}
+
+      - name: Show build environment
+        run: |
+          uname -m || true
+          dart --version
+          file "$(which dart)" || true
+
       - run: mkdir output
       - run: dart pub get
       - run: dart tools/setversion.dart
@@ -27,8 +40,6 @@ jobs:
 
       - name: Ad-hoc sign macOS binary
         if: matrix.os == 'macOS-latest'
-        # On modern macOS unsigned Mach-O binaries are refused by the kernel.
-        # --sign - performs an ad-hoc signature (no certificate needed).
         run: codesign --sign - output/${{ matrix.output-name }}
 
       - uses: actions/upload-artifact@v4
