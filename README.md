@@ -8,6 +8,8 @@ This is Picosite, a *minimalist* static site generator.
 
 Picosite is published as a single, stand alone executable. You can get a copy of the latest version builds for Linux, MacOS and Windows from [the releases page](https://github.com/maks/picosite/releases).
 
+_NOTE:_ The MacOS binary is for ARM system and users on MacOS will need to remove the quarantine on it with: xattr -d com.apple.quarantine /path/to/picosite  because its only adhoc signed.
+
 The basic use of Picosite is to run it from the command line, passing in the path to a `site` directory, containing a `pages` subdirectory with markdown content files. The markdown files are expected to have YAML frontmatter which at the very minimum specifies a template file in [Handlebars](https://handlebarsjs.com/) format which will then cause Picosite to create output based on the content using the specified template file in the `output` directory.
 
 For example if you run Picosite in the top level of this git repo using:
