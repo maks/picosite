@@ -328,6 +328,9 @@ class Pdfbuilder {
         borderColor: _parsePdfColor(values['border_color']),
         borderWidth: _toDouble(values['border_width']) ?? 1,
         padding: _toDouble(values['padding']) ?? 2,
+        paddingHorizontal: _toDouble(values['padding_horizontal']),
+        paddingVertical: _toDouble(values['padding_vertical']),
+        borderRadius: _toDouble(values['border_radius']),
       );
     }
 
