@@ -138,22 +138,57 @@ Notes:
 - Inline code is rendered as plain text for correct baseline alignment. Background color is supported; borders and padding are currently ignored.
 - Colors accept either hex strings (`#RRGGBB` / `#AARRGGBB`) or integer literals like `0xAARRGGBB`.
 
-#### Callout Example
+### Shortcodes
 
-Here is an example that uses HTML with classes to render “callout” blocks in the PDF:
+Picosite supports generic shortcodes to easily wrap markdown content inside reusable Handlebars/Mustache templates without writing raw HTML in your markdown files.
 
+A shortcode is mapped directly to a template file in your `includes` (partials) directory. For example, a shortcode named `callout` will look for `includes/callout.html`.
+
+You can use shortcodes in two ways:
+
+**1. Multi-line Block:**
+```markdown
+{% callout type=note %}
+This is a multi-line callout.
+It can contain **markdown**!
+{% endcallout %}
+```
+
+**2. Single-line Block:**
+```markdown
+{% callout type=warn | This is a single-line warning! %}
+```
+
+#### Shortcode Templates and Attributes
+
+Attributes passed in the shortcode (e.g., `type=note`) are exposed as variables to the Mustache template, along with a special `{{{content}}}` variable containing the parsed HTML of the inner markdown.
+
+To allow for conditional rendering in logic-less Mustache templates, Picosite automatically injects boolean flags for every string attribute. For example, passing `type=note` creates a boolean variable `is_type_note` set to `true`.
+
+**Example `includes/callout.html` template:**
 ```html
-<div class="callout callout-note">
+<div class="callout callout-{{type}}">
   <table class="callout-table">
     <tr>
-      <td class="callout-icon" width="40"><img src="image/pico-sad.png" alt="Note" width="30" height="30" /></td>
-      <td class="callout-text"><em>Note:</em> The tips below are community-sourced and may describe workflows that depend on instrument or project setup.</td>
+      <td class="callout-icon" width="40">
+        {{#is_type_note}}
+        <img src="image/pico-note.png" alt="Note" />
+        {{/is_type_note}}
+        {{#is_type_warn}}
+        <img src="image/pico-warn.png" alt="Warning" />
+        {{/is_type_warn}}
+      </td>
+      <td class="callout-text">
+        {{#is_type_note}}<em>Note:</em>{{/is_type_note}}
+        {{#is_type_warn}}<strong>Warning:</strong>{{/is_type_warn}}
+        {{{content}}}
+      </td>
     </tr>
   </table>
 </div>
 ```
 
-To style these in PDF output, use `styles.pdf.block_class_styles` entries. Example:
+To style these blocks in PDF output, you can use `styles.pdf.block_class_styles` in your PDF configuration YAML:
 
 ```yaml
 styles:
