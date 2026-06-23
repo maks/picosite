@@ -9,6 +9,49 @@ class Pdfbuilder {
 
   Pdfbuilder(this.pdfOutputPath);
 
+  /// Load custom fonts from a map of { fontName: ttfPath }
+  /// Returns { fontName: Font } and the base/default font (first entry or ttf-font-path)
+  Map<String, Font> _loadCustomFonts(
+    String assetsPath,
+    Map? fontsConfig,
+    String? singleFontPath,
+  ) {
+    final Map<String, Font> customFonts = {};
+
+    // Legacy single-font support (ttf-font-path) — treated as 'body' font
+    if (singleFontPath != null) {
+      final fontBytes =
+          File('${Directory.current.path}/$singleFontPath').readAsBytesSync();
+      customFonts['body'] = Font.ttf(ByteData.sublistView(fontBytes));
+    }
+
+    // New multi-font support
+    if (fontsConfig is Map) {
+      for (final entry in fontsConfig.entries) {
+        final fontName = entry.key.toString();
+        final ttfPath = entry.value.toString();
+        try {
+          final fontBytes =
+              File('${Directory.current.path}/$ttfPath').readAsBytesSync();
+          customFonts[fontName] = Font.ttf(ByteData.sublistView(fontBytes));
+          print('  loaded font: $fontName -> $ttfPath');
+        } catch (e) {
+          print('  WARNING: could not load font $fontName from $ttfPath: $e');
+        }
+      }
+    }
+
+    return customFonts;
+  }
+
+  /// Get the base/default font for body text
+  Font? _getBaseFont(Map<String, Font> customFonts) {
+    // Prefer 'body' font if specified, otherwise use first available font,
+    // or null (pdf library default serif)
+    return customFonts['body'] ??
+        (customFonts.isNotEmpty ? customFonts.values.first : null);
+  }
+
   void addHTMLPage(String pagename, String title, String pagecontent) {
     print("ad page: $pagename");
     _htmlContent[pagename] = pagecontent;
@@ -45,11 +88,28 @@ class Pdfbuilder {
     final Map? rawPdfStyles = styles['pdf'] as Map?;
     final Map pdfStyles = rawPdfStyles ?? <String, dynamic>{};
 
-    Font? customFont;
-    if (ttfFontPath != null) {
-      final fontbytes =
-          File('${Directory.current.path}/$ttfFontPath').readAsBytesSync();
-      customFont = Font.ttf(ByteData.sublistView(fontbytes));
+    // Load all custom fonts (legacy single-font + new multi-font config)
+    final Map<String, Font> customFonts = _loadCustomFonts(
+      assetspath,
+      styles['fonts'] as Map?,
+      ttfFontPath,
+    );
+    final Font? baseFont = _getBaseFont(customFonts);
+    final String? headingFontName = customFonts.containsKey('heading') ? 'heading' : null;
+    final String? codeFontName = customFonts.containsKey('code') ? 'code' : null;
+    final String? codeBoldFontName = customFonts.containsKey('code-bold') ? 'code-bold' : null;
+
+    if (customFonts.isNotEmpty) {
+      print('==== MULTI-FONT PDF CONFIGURATION ====');
+      final baseName = baseFont != null
+          ? customFonts.entries.firstWhere(
+              (e) => e.value == baseFont,
+              orElse: () => MapEntry('default', Font.ttf(Uint8List(0).buffer.asByteData())),
+            ).key
+          : 'pdf default';
+      print('Base font: $baseName');
+      if (headingFontName != null) print('Heading font: $headingFontName');
+      if (codeFontName != null) print('Code font: $codeFontName');
     }
 
     int pageCount = 0;
@@ -80,6 +140,25 @@ class Pdfbuilder {
               ? pdfStyles['block_class_styles'] as Map
               : null);
 
+      // Build heading TextStyle with optional named font
+      final Font? h1Font = headingFontName != null ? customFonts[headingFontName] : null;
+      final TextStyle h1TextStyle = TextStyle(
+        fontSize: h1FontSize,
+        fontWeight: h1FontWeight ?? FontWeight.bold,
+        color: h1Color,
+        font: h1Font,
+      );
+
+      // Build inline code TextStyle with optional named font
+      final Font? codeFont = codeFontName != null ? customFonts[codeFontName] : null;
+      TextStyle? inlineCodeTextStyle;
+      if (inlineCodeTextColor != null) {
+        inlineCodeTextStyle = TextStyle(
+          color: inlineCodeTextColor,
+          font: codeFont,
+        );
+      }
+
       final tagStyle = HtmlTagStyle(
         codeBlockBackgroundColor: PdfColor.fromInt(codeBgColor),
         paragraphMargin: EdgeInsets.only(bottom: paragraphMarginBottom),
@@ -88,38 +167,37 @@ class Pdfbuilder {
         headingMargins: {
           1: EdgeInsets.only(bottom: h1MarginBottom),
         },
-        codeStyle: inlineCodeTextColor != null
-            ? TextStyle(color: inlineCodeTextColor)
-            : null,
+        codeStyle: inlineCodeTextStyle,
         inlineCodeBackgroundColor: inlineCodeBackgroundColor,
         inlineCodeBorderColor: inlineCodeBorderColor,
         inlineCodeBorderWidth: inlineCodeBorderWidth ?? 1,
         inlineCodePadding: inlineCodePadding ?? 2,
         inlineClassStyles: inlineClassStyles,
         blockClassStyles: blockClassStyles,
-        h1Style: TextStyle(
-          fontSize: h1FontSize,
-          fontWeight: h1FontWeight ?? FontWeight.bold,
-          color: h1Color,
-        ),
+        h1Style: h1TextStyle,
       );
 
-      final List<Widget> markdownwidgets = await HTMLToPdf().convert(
+      // Pass custom fonts to HTMLToPdf for CSS font-family resolution
+      final htmlToPdf = customFonts.isNotEmpty
+          ? HTMLToPdf(customFonts: customFonts)
+          : HTMLToPdf();
+
+      final List<Widget> markdownwidgets = await htmlToPdf.convert(
         _htmlContent[page] ?? '',
         useNewEngine: true,
         tagStyle: tagStyle,
       );
 
       if (tocPagePosition == pageCount) {
-        _addTOCPage(pdfDocument);
+        _addTOCPage(pdfDocument, baseFont: baseFont);
       }
 
       pdfDocument.addPage(
         MultiPage(
           pageFormat: PdfPageFormat.a4,
-          theme: customFont != null
+          theme: baseFont != null
               ? ThemeData.withFont(
-                  base: customFont,
+                  base: baseFont,
                 )
               : null,
           build: (context) {
@@ -135,7 +213,7 @@ class Pdfbuilder {
                   '${context.pageNumber}',
                   style: Theme.of(context)
                       .defaultTextStyle
-                      .copyWith(color: PdfColors.grey, font: customFont),
+                      .copyWith(color: PdfColors.grey, font: baseFont),
                 ),
               );
             } else {
@@ -153,7 +231,10 @@ class Pdfbuilder {
     print("saved pdf: $pdfOutputPath");
   }
 
-  void _addTOCPage(Document pdfDocument) {
+  void _addTOCPage(
+    Document pdfDocument, {
+    Font? baseFont,
+  }) {
     // This is using forked version of the htmltopdfwidgets package
     // https://github.com/maks/htmltopdfwidgets
     pdfDocument.addPage(
@@ -165,7 +246,9 @@ class Pdfbuilder {
               Center(
                 child: Text(
                   'Table of contents',
-                  style: Theme.of(context).header0,
+                  style: Theme.of(context).header0.copyWith(
+                    font: baseFont,
+                  ),
                 ),
               ),
               SizedBox(height: 20),

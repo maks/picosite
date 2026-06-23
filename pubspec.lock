@@ -157,8 +157,8 @@ packages:
     dependency: "direct main"
     description:
       path: "packages/htmltopdfwidgets"
-      ref: add-headers-and-styles
-      resolved-ref: "20f332f0d1cbae26428093406e1612ca99512fff"
+      ref: add-headers-styles-pdf-multifonts
+      resolved-ref: f0f301b8b1c8584085cddfdee40a983d9695c4ba
       url: "https://github.com/maks/htmltopdfwidgets"
     source: git
     version: "2.0.1"

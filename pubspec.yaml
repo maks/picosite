@@ -17,11 +17,11 @@ dependencies:
   watcher: ^1.1.0
   yaml: ^3.1.0
   htmltopdfwidgets:
-    # path: ../htmlpdf-flutter-packages/packages/htmltopdfwidgets
+    # path: ../htmltopdfwidgets/packages/htmltopdfwidgets/
     git:
       url: https://github.com/maks/htmltopdfwidgets
       path: packages/htmltopdfwidgets
-      ref: add-headers-and-styles
+      ref: add-headers-styles-pdf-multifonts
 
 dev_dependencies:
   lints: ^3.0.0
