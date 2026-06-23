@@ -45,6 +45,32 @@ Apart from "regular" markdown, some "extensions" are supported:
 * Tables markup
 * Inline HTML
 * ID's are added to header elements (H1, H2, etc)
+* Custom Shortcodes `{% name attr=val %}`
+
+### Shortcodes
+
+Picosite supports generic shortcodes to wrap markdown content inside reusable Handlebars/Mustache templates without writing raw HTML.
+
+A shortcode maps directly to a template file in your `includes` (partials) directory.
+
+**1. Multi-line Block:**
+```markdown
+{% callout type=note %}
+This is a multi-line callout.
+{% endcallout %}
+```
+
+**2. Single-line Block:**
+```markdown
+{% callout type=warn | This is a single-line warning! %}
+```
+
+**Live Example:**
+Below is a working example of the `callout` shortcode built into this documentation:
+
+{% callout type=note %}
+This is a live example of the shortcode rendering! Notice how it correctly formats the callout based on the `type=note` attribute.
+{% endcallout %}
 
 
 ### Handlebars Templates
