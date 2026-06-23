@@ -6,8 +6,9 @@ import 'package:htmltopdfwidgets/htmltopdfwidgets.dart';
 class Pdfbuilder {
   final Map<String, String> _htmlContent = {};
   final String pdfOutputPath;
+  final bool verbose;
 
-  Pdfbuilder(this.pdfOutputPath);
+  Pdfbuilder(this.pdfOutputPath, {this.verbose = false});
 
   /// Load custom fonts from a map of { fontName: ttfPath }
   /// Returns { fontName: Font } and the base/default font (first entry or ttf-font-path)
@@ -15,6 +16,7 @@ class Pdfbuilder {
     String assetsPath,
     Map? fontsConfig,
     String? singleFontPath,
+    bool verbose,
   ) {
     final Map<String, Font> customFonts = {};
 
@@ -34,9 +36,9 @@ class Pdfbuilder {
           final fontBytes =
               File('${Directory.current.path}/$ttfPath').readAsBytesSync();
           customFonts[fontName] = Font.ttf(ByteData.sublistView(fontBytes));
-          print('  loaded font: $fontName -> $ttfPath');
+          if (verbose) print('  loaded font: $fontName -> $ttfPath');
         } catch (e) {
-          print('  WARNING: could not load font $fontName from $ttfPath: $e');
+          if (verbose) print('  WARNING: could not load font $fontName from $ttfPath: $e');
         }
       }
     }
@@ -53,7 +55,7 @@ class Pdfbuilder {
   }
 
   void addHTMLPage(String pagename, String title, String pagecontent) {
-    print("ad page: $pagename");
+    if (verbose) print("ad page: $pagename");
     _htmlContent[pagename] = pagecontent;
   }
 
@@ -78,8 +80,12 @@ class Pdfbuilder {
 
     Directory.current = Directory(assetspath);
 
-    print("==== BUILDING PDF ====");
-    print("Pages List: $pages");
+    if (verbose) {
+      print("==== BUILDING PDF ====");
+      print("Pages List: $pages");
+    } else {
+      print("==== BUILDING PDF ====");
+    }
 
     final Map? codeStyle = styles['code'] as Map?;
     final int codeBgColor = (codeStyle?['background-color'] as dynamic?)?.toInt() ?? 0xffffff;
@@ -93,13 +99,14 @@ class Pdfbuilder {
       assetspath,
       styles['fonts'] as Map?,
       ttfFontPath,
+      verbose,
     );
     final Font? baseFont = _getBaseFont(customFonts);
     final String? headingFontName = customFonts.containsKey('heading') ? 'heading' : null;
     final String? codeFontName = customFonts.containsKey('code') ? 'code' : null;
     final String? codeBoldFontName = customFonts.containsKey('code-bold') ? 'code-bold' : null;
 
-    if (customFonts.isNotEmpty) {
+    if (customFonts.isNotEmpty && verbose) {
       print('==== MULTI-FONT PDF CONFIGURATION ====');
       final baseName = baseFont != null
           ? customFonts.entries.firstWhere(
@@ -114,7 +121,7 @@ class Pdfbuilder {
 
     int pageCount = 0;
     for (var page in pages) {
-      print("converting HTML to PDF page: $page");
+      if (verbose) print("converting HTML to PDF page: $page");
       final paragraphMarginBottom =
           _toDouble(pdfStyles['paragraph_margin_bottom']) ?? 10;
       final listMarginLeft = _toDouble(pdfStyles['list_margin_left']) ?? 18;
@@ -228,7 +235,7 @@ class Pdfbuilder {
     Directory.current = currentCWD;
 
     await pdfOutfile.writeAsBytes(await pdfDocument.save());
-    print("saved pdf: $pdfOutputPath");
+    if (verbose) print("saved pdf: $pdfOutputPath");
   }
 
   void _addTOCPage(
