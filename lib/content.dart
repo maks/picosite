@@ -7,6 +7,7 @@ import 'package:path/path.dart' as p;
 import "package:markdown/markdown.dart" as m;
 import 'package:yaml/yaml.dart' as y;
 
+import 'shortcode_syntax.dart';
 import 'pdfbuilder.dart';
 
 Future<void> processFile(
@@ -119,12 +120,54 @@ Future<String> processMarkdown(
       InlineHtmlSyntax(),
     ],
     blockSyntaxes: [
+      ShortcodeSyntax(),
       TableSyntax(),
       FencedCodeBlockSyntax(),
       HeaderWithIdSyntax(),
       HorizontalRuleSyntax(),
     ],
   );
+
+  // Post-process generic shortcodes using the project's partials if they exist
+  try {
+    final shortcodeRegex = RegExp(
+      r'<div class="picosite-shortcode" data-shortcode-name="([^"]*)" data-shortcode-attrs="([^"]*)">([\s\S]*?)<\/div>',
+    );
+    
+    docVariables['body'] = (docVariables['body'] as String).replaceAllMapped(shortcodeRegex, (match) {
+      final name = match.group(1)!;
+      final attrsStr = match.group(2)!;
+      final content = match.group(3) ?? '';
+      
+      try {
+        final Map<String, dynamic> attrs = jsonDecode(utf8.decode(base64Decode(attrsStr)));
+        attrs['content'] = content;
+        
+        // Automatically inject boolean flags for all string attributes
+        // This allows logic-less Mustache templates to do conditional rendering
+        // e.g., {{#is_type_note}} ... {{/is_type_note}}
+        final Map<String, dynamic> booleanFlags = {};
+        attrs.forEach((key, value) {
+          if (value is String) {
+            booleanFlags['is_${key}_${value}'] = true;
+          }
+        });
+        attrs.addAll(booleanFlags);
+        
+        final templateFile = File(p.join(partialsPath, '$name.html'));
+        if (templateFile.existsSync()) {
+          final templateText = templateFile.readAsStringSync();
+          final template = Template(templateText, htmlEscapeValues: false, lenient: true);
+          return template.renderString(attrs);
+        }
+      } catch (e) {
+        print('Error processing shortcode $name: $e');
+      }
+      return match.group(0)!; // Leave unchanged if no template or error
+    });
+  } catch (e) {
+    print('Warning: error processing shortcodes: $e');
+  }
 
   // Add _data access for JSON data files (e.g., {{_data.talks}})
   docVariables['_data'] = dataFiles ?? {};
