@@ -113,6 +113,8 @@ PicositeConfig handleArgs(arguments, PicositeConfig config) {
       verbose = true;
     }
 
+    config = config.copyWith(verbose: verbose);
+
     // Act on the arguments provided.
     print('Positional arguments: ${results.rest}');
     if (verbose) {

@@ -52,8 +52,8 @@ void main(List<String> arguments) async {
   }
 
   // Load data files and listings before processing pages
-  final dataFiles = loadAllDataFiles(config.dataPath);
-  final listings = loadAllListings(listingsPath);
+  final dataFiles = loadAllDataFiles(config.dataPath, config.verbose);
+  final listings = loadAllListings(listingsPath, config.verbose);
 
   Map? pdfConfig;
   if (!config.preview && config.pdf.isNotEmpty) {
@@ -65,7 +65,7 @@ void main(List<String> arguments) async {
   }
 
   final pdfBuilder =
-      (!config.preview && pdfConfig != null) ? Pdfbuilder("output.pdf") : null;
+      (!config.preview && pdfConfig != null) ? Pdfbuilder("output.pdf", verbose: config.verbose) : null;
 
   final pagesDir = Directory(p.joinAll([siteDir.path, 'pages']));
   final List<FileSystemEntity> siteDirFiles = [];
@@ -76,7 +76,7 @@ void main(List<String> arguments) async {
   for (final f in siteDirFiles) {
     if (f is File && p.extension(f.path).toLowerCase() == '.md') {
       await processFile(f, p.join(siteDir.path, 'pages'), config.outputPath, config.includesPath,
-          config.templatesPath, pdfBuilder,
+          config.templatesPath, pdfBuilder, config.verbose,
           dataFiles: dataFiles, listings: listings);
     }
   }
@@ -87,16 +87,16 @@ void main(List<String> arguments) async {
     final watcher = DirectoryWatcher(siteDir.path);
     final includesWatcher = DirectoryWatcher(config.includesPath);
     watcher.events.listen((event) async {
-      print("WATCH event:$event");
+      if (config.verbose) print("WATCH event:$event");
       // For now, we just process the file if it exists in our list
       await processAllFiles(siteDir, config, null,
           dataFiles: dataFiles, listings: listings);
     });
     includesWatcher.events.listen((event) async {
-      print("INC WATCH event:$event");
+      if (config.verbose) print("INC WATCH event:$event");
       // don't know which files use this particular partial so reprocess all
-      final newDataFiles = loadAllDataFiles(config.dataPath);
-      final newListings = loadAllListings(config.listingsPath);
+      final newDataFiles = loadAllDataFiles(config.dataPath, config.verbose);
+      final newListings = loadAllListings(config.listingsPath, config.verbose);
       await processAllFiles(siteDir, config, null,
           dataFiles: newDataFiles, listings: newListings);
     });
@@ -108,7 +108,7 @@ void main(List<String> arguments) async {
   if (pdfBuilder != null) {
     final pdfPagesRaw = pdfConfig!["pages"];
     final pdfPages = (pdfPagesRaw is List) ? pdfPagesRaw.cast<String>() : <String>[];
-    print("pdfpages: ${pdfPages.length}");
+    if (config.verbose) print("pdfpages: ${pdfPages.length}");
 
     await pdfBuilder.createPDF(
       assetspath: config.assetsPath,
@@ -133,7 +133,7 @@ Future<void> processAllFiles(Directory siteDir, PicositeConfig config,
   for (final f in siteDirFiles) {
     if (f is File && p.extension(f.path).toLowerCase() == '.md') {
       await processFile(f, p.join(siteDir.path, 'pages'), config.outputPath, config.includesPath,
-          config.templatesPath, pdfBuilder,
+          config.templatesPath, pdfBuilder, config.verbose,
           dataFiles: dataFiles, listings: listings);
     }
   }

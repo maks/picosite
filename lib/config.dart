@@ -8,6 +8,7 @@ class PicositeConfig {
   final String listingsPath;
   final bool preview;
   final String pdf;
+  final bool verbose;
 
   PicositeConfig({
     required this.sitePath,
@@ -19,6 +20,7 @@ class PicositeConfig {
     required this.dataPath,
     required this.listingsPath,
     required this.pdf,
+    this.verbose = false,
   });
 
   PicositeConfig copyWith({
@@ -31,6 +33,7 @@ class PicositeConfig {
     String? listingsPath,
     bool? preview,
     String? pdf,
+    bool? verbose,
   }) {
     return PicositeConfig(
       sitePath: sitePath ?? this.sitePath,
@@ -42,6 +45,7 @@ class PicositeConfig {
       listingsPath: listingsPath ?? this.listingsPath,
       preview: preview ?? this.preview,
       pdf: pdf ?? this.pdf,
+      verbose: verbose ?? this.verbose,
     );
   }
 }

@@ -17,12 +17,13 @@ Future<void> processFile(
     final String includesPath,
     String templatesPath,
     Pdfbuilder? pdfBuilder,
+    bool verbose,
     {Map? dataFiles,
     Map? listings}) async {
   final name = p.basename(f.path);
-  print("found input file: $name");
+  if (verbose) print("found input file: $name");
   if (p.extension(f.path).toLowerCase() == '.md') {
-    print("processing: $name");
+    if (verbose) print("processing: $name");
     final markdown = (f as File).readAsStringSync();
     final title = p.basenameWithoutExtension(f.path);
     final html = await processMarkdown(
@@ -32,6 +33,7 @@ Future<void> processFile(
       templatesPath,
       name,
       pdfBuilder,
+      verbose,
       dataFiles: dataFiles,
       listings: listings,
     );
@@ -47,12 +49,12 @@ Future<void> processFile(
     final dir = Directory(outputDir);
     if (!dir.existsSync()) {
       dir.createSync(recursive: true);
-      print("created output directory: $outputDir");
+      if (verbose) print("created output directory: $outputDir");
     }
     
     final outputFile = File(p.join(outputDir, outputFileName));
     outputFile.writeAsStringSync(html);
-    print("wrote output to: ${outputFile.path}");
+    if (verbose) print("wrote output to: ${outputFile.path}");
   }
 }
 
@@ -62,7 +64,8 @@ Future<String> processMarkdown(
     final String partialsPath,
     final String templatesPath,
     final String filename,
-    final Pdfbuilder? pdfBuilder, {
+    final Pdfbuilder? pdfBuilder,
+    bool verbose, {
     Map? dataFiles,
     Map? listings,
   }) async {
@@ -82,7 +85,7 @@ Future<String> processMarkdown(
     }
     // Extract the remaining markdown content
     markdownBody = markdownDoc.replaceFirst(regex, '');
-    print('YAML Front Matter:\n$yamlFrontMatter');
+    if (verbose) print('YAML Front Matter:\n$yamlFrontMatter');
     frontMatter = y.loadYaml(yamlFrontMatter);
   } else {
     // If no frontmatter, use the filename as title
@@ -161,12 +164,12 @@ Future<String> processMarkdown(
           return template.renderString(attrs);
         }
       } catch (e) {
-        print('Error processing shortcode $name: $e');
+        if (verbose) print('Error processing shortcode $name: $e');
       }
       return match.group(0)!; // Leave unchanged if no template or error
     });
   } catch (e) {
-    print('Warning: error processing shortcodes: $e');
+    if (verbose) print('Warning: error processing shortcodes: $e');
   }
 
   // Add _data access for JSON data files (e.g., {{_data.talks}})
@@ -187,7 +190,7 @@ Future<String> processMarkdown(
   String templateName = frontMatter['template'] ?? 'default';
   if (templateName.isEmpty) templateName = 'default';
 
-  print("CWD:${Directory.current.path}");
+  if (verbose) print("CWD:${Directory.current.path}");
 
   String templateText =
       File('$templatesPath/$templateName.html').readAsStringSync();
@@ -203,7 +206,7 @@ Future<String> processMarkdown(
     final pdfTemplateName = '$templatesPath/${templateName}_pdf.html';
     final pdfTemplateFile = File(pdfTemplateName);
     if (pdfTemplateFile.existsSync()) {
-      print("PDF template: $pdfTemplateName");
+      if (verbose) print("PDF template: $pdfTemplateName");
       String templateUrlText = pdfTemplateFile.readAsStringSync();
 
       final pdftemplate = Template(
@@ -216,7 +219,7 @@ Future<String> processMarkdown(
       final rendered = pdftemplate.renderString(docVariables);
       pdfBuilder.addHTMLPage(filename, docVariables["title"], rendered);
     } else {
-      print("PDF template not found, skipping: $pdfTemplateName");
+      if (verbose) print("PDF template not found, skipping: $pdfTemplateName");
     }
   }
 
@@ -231,11 +234,11 @@ Future<void> copyStatic(String input, String output) async {
 // ============ Helper functions ============
 
 /// Loads all JSON data files from the data directory
-Map loadAllDataFiles(String dataPath) {
+Map loadAllDataFiles(String dataPath, bool verbose) {
   final Map dataFiles = {};
   final dataDir = Directory(dataPath);
   if (!dataDir.existsSync()) {
-    print("Data directory not found: $dataPath");
+    if (verbose) print("Data directory not found: $dataPath");
     return dataFiles;
   }
   
@@ -247,9 +250,9 @@ Map loadAllDataFiles(String dataPath) {
       try {
         final data = jsonDecode(content);
         dataFiles[name] = data;
-        print('Loaded data file: $name');
+        if (verbose) print('Loaded data file: $name');
       } catch (e) {
-        print('Error loading $name: $e');
+        if (verbose) print('Error loading $name: $e');
       }
     }
   }
@@ -257,11 +260,11 @@ Map loadAllDataFiles(String dataPath) {
 }
 
 /// Loads all listings from the _listings directory
-Map loadAllListings(String listingsPath) {
+Map loadAllListings(String listingsPath, bool verbose) {
   final Map listings = {};
   final listingsDir = Directory(listingsPath);
   if (!listingsDir.existsSync()) {
-    print("Listings directory not found: $listingsPath");
+    if (verbose) print("Listings directory not found: $listingsPath");
     return listings;
   }
   
@@ -277,7 +280,7 @@ Map loadAllListings(String listingsPath) {
       
       final items = _loadListingItems(path, filter, sortBy);
       listings[name] = items;
-      print('Loaded listing: $name with ${items.length} items');
+      if (verbose) print('Loaded listing: $name with ${items.length} items');
     }
   }
   return listings;
