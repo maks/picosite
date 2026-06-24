@@ -43,6 +43,11 @@ ArgParser buildParser() {
       help: 'Generate a PDF using this config file.',
     )
     ..addFlag(
+      'pdf-preview',
+      negatable: false,
+      help: 'Rebuild PDF when files change in preview/watch mode.',
+    )
+    ..addFlag(
       'help',
       abbr: 'h',
       negatable: false,
@@ -79,6 +84,10 @@ PicositeConfig handleArgs(arguments, PicositeConfig config) {
 
     if (results.wasParsed('pdf')) {
       config = config.copyWith(pdf: results.option("pdf"));
+    }
+
+    if (results.wasParsed('pdf-preview')) {
+      config = config.copyWith(pdfPreview: true);
     }
 
     if (results.wasParsed('site')) {

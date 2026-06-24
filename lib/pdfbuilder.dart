@@ -76,9 +76,12 @@ class Pdfbuilder {
       pageMode: PdfPageMode.outlines,
     );
 
-    final currentCWD = Directory.current.path;
-
-    Directory.current = Directory(assetspath);
+    final assetsDir = Directory(assetspath).absolute;
+    if (!assetsDir.existsSync()) {
+      throw Exception('Assets directory not found: ${assetsDir.path}');
+    }
+    final savedCWD = Directory.current.path;
+    Directory.current = assetsDir;
 
     if (verbose) {
       print("==== BUILDING PDF ====");
@@ -232,9 +235,9 @@ class Pdfbuilder {
       pageCount++;
     }
 
-    Directory.current = currentCWD;
+    Directory.current = savedCWD;
 
-    await pdfOutfile.writeAsBytes(await pdfDocument.save());
+    await pdfOutfile.writeAsBytes(await pdfDocument.save(), flush: true);
     if (verbose) print("saved pdf: $pdfOutputPath");
   }
 

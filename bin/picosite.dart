@@ -35,11 +35,12 @@ void main(List<String> arguments) async {
   }
 
   // Make paths absolute relative to site
+  final cwd = Directory.current.path;
   config = config.copyWith(
-    includesPath: p.join(config.sitePath, config.includesPath),
-    assetsPath: p.join(config.sitePath, config.assetsPath),
-    templatesPath: p.join(config.sitePath, config.templatesPath),
-    dataPath: p.join(config.sitePath, config.dataPath),
+    includesPath: p.absolute(p.join(cwd, config.sitePath, config.includesPath)),
+    assetsPath: p.absolute(p.join(cwd, config.sitePath, config.assetsPath)),
+    templatesPath: p.absolute(p.join(cwd, config.sitePath, config.templatesPath)),
+    dataPath: p.absolute(p.join(cwd, config.sitePath, config.dataPath)),
   );
 
   // Load listings from CWD (not inside site directory)
@@ -56,7 +57,7 @@ void main(List<String> arguments) async {
   final listings = loadAllListings(listingsPath, config.verbose);
 
   Map? pdfConfig;
-  if (!config.preview && config.pdf.isNotEmpty) {
+  if (config.pdf.isNotEmpty) {
     final pdfFile = File(config.pdf);
     if (pdfFile.existsSync()) {
       final pdfYaml = pdfFile.readAsStringSync();
@@ -64,8 +65,9 @@ void main(List<String> arguments) async {
     }
   }
 
+  final pdfOutputPath = p.absolute(p.join(cwd, config.outputPath, "output.pdf"));
   final pdfBuilder =
-      (!config.preview && pdfConfig != null) ? Pdfbuilder("output.pdf", verbose: config.verbose) : null;
+      (!config.preview || config.pdfPreview) && pdfConfig != null ? Pdfbuilder(pdfOutputPath, verbose: config.verbose) : null;
 
   final pagesDir = Directory(p.joinAll([siteDir.path, 'pages']));
   final List<FileSystemEntity> siteDirFiles = [];
@@ -83,22 +85,58 @@ void main(List<String> arguments) async {
 
   await copyStatic(config.assetsPath, config.outputPath);
 
+  // Generate initial PDF in preview+pdfPreview mode
+  if (config.pdfPreview && pdfBuilder != null && pdfConfig != null) {
+    final pdfPagesRaw = pdfConfig!["pages"];
+    final pdfPages = (pdfPagesRaw is List) ? pdfPagesRaw.cast<String>() : <String>[];
+    await pdfBuilder.createPDF(
+      assetspath: config.assetsPath,
+      pages: pdfPages,
+      documentTitle: (pdfConfig["title"] as String?) ?? "DOCTITLE",
+      documentAuthor: (pdfConfig["author"] as String?) ?? "DOCAUTHOR",
+      styles: (pdfConfig["styles"] as Map?) ?? <String, dynamic>{},
+      tocPagePosition: (pdfConfig["tocPagePosition"] as int?) ?? 0,
+    );
+  }
+
   if (config.preview) {
     final watcher = DirectoryWatcher(siteDir.path);
     final includesWatcher = DirectoryWatcher(config.includesPath);
     watcher.events.listen((event) async {
       if (config.verbose) print("WATCH event:$event");
-      // For now, we just process the file if it exists in our list
-      await processAllFiles(siteDir, config, null,
+      await processAllFiles(siteDir, config, pdfBuilder,
           dataFiles: dataFiles, listings: listings);
+      if (config.pdfPreview && pdfBuilder != null) {
+        final pdfPagesRaw = pdfConfig!["pages"];
+        final pdfPages = (pdfPagesRaw is List) ? pdfPagesRaw.cast<String>() : <String>[];
+        await pdfBuilder.createPDF(
+          assetspath: config.assetsPath,
+          pages: pdfPages,
+          documentTitle: (pdfConfig["title"] as String?) ?? "DOCTITLE",
+          documentAuthor: (pdfConfig["author"] as String?) ?? "DOCAUTHOR",
+          styles: (pdfConfig["styles"] as Map?) ?? <String, dynamic>{},
+          tocPagePosition: (pdfConfig["tocPagePosition"] as int?) ?? 0,
+        );
+      }
     });
     includesWatcher.events.listen((event) async {
       if (config.verbose) print("INC WATCH event:$event");
-      // don't know which files use this particular partial so reprocess all
       final newDataFiles = loadAllDataFiles(config.dataPath, config.verbose);
       final newListings = loadAllListings(config.listingsPath, config.verbose);
-      await processAllFiles(siteDir, config, null,
+      await processAllFiles(siteDir, config, pdfBuilder,
           dataFiles: newDataFiles, listings: newListings);
+      if (config.pdfPreview && pdfBuilder != null) {
+        final pdfPagesRaw = pdfConfig!["pages"];
+        final pdfPages = (pdfPagesRaw is List) ? pdfPagesRaw.cast<String>() : <String>[];
+        await pdfBuilder.createPDF(
+          assetspath: config.assetsPath,
+          pages: pdfPages,
+          documentTitle: (pdfConfig["title"] as String?) ?? "DOCTITLE",
+          documentAuthor: (pdfConfig["author"] as String?) ?? "DOCAUTHOR",
+          styles: (pdfConfig["styles"] as Map?) ?? <String, dynamic>{},
+          tocPagePosition: (pdfConfig["tocPagePosition"] as int?) ?? 0,
+        );
+      }
     });
 
     final p = PreviewServer(config.outputPath);
