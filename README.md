@@ -34,6 +34,17 @@ and then look in the created `output` directory, you will see the [documentation
 
 Looking in the `docs` folder serves as an example of how to use Picosite for your own content.
 
+
+### Preview mode
+
+Picosite can be run to watch for content file changes and automatically rebuild the HTML or both HTML and PDF outputs, eg.
+```
+# Watch mode with HTML only (no PDF rebuild):
+picosite -p -s . -o output -i includes -a assets -t templates -d pdfconfig.yaml -v                                                                                                                                                                                                                                                                    
+# Watch mode WITH PDF rebuild on every change:
+picosite -p -s . -o output -i includes -a assets -t templates -d pdfconfig.yaml --pdf-preview -v  
+ ``` 
+
 ### PDF Output
 
 PDF out is enabled using the `-d` command line parameter.
@@ -234,3 +245,4 @@ Usage: dart picosite.dart <flags> [arguments]
 ## Acknowledgements
 
 My thanks to @munificent for his [Markymark package](https://github.com/munificent/markymark), which was the starting point for Picosite.
+```
