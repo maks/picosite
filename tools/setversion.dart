@@ -1,15 +1,13 @@
-import 'dart:io';
+import 'dart:io' show Directory, File, exit;
 
 /// Reads the version from pubspec.yaml and writes it into lib/version.dart.
-/// Paths are resolved relative to the project root (parent of this script's dir).
+/// Expects to be run from the project root (e.g. `dart tools/setversion.dart`).
 void main(List<String> arguments) {
-  // Resolve paths relative to the project root, not cwd.
-  final scriptDir = Directory.fromUri(Platform.script);
-  final projectRoot = scriptDir.parent.path;
+  final projectRoot = Directory.current.path;
 
   final pubspecFile = File('$projectRoot/pubspec.yaml');
   if (!pubspecFile.existsSync()) {
-    print('ERROR: pubspec.yaml not found at ${pubspecFile.path}');
+    print('ERROR: pubspec.yaml not found at $projectRoot/pubspec.yaml');
     exit(1);
   }
 
