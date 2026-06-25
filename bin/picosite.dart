@@ -104,8 +104,15 @@ void main(List<String> arguments) async {
     final includesWatcher = DirectoryWatcher(config.includesPath);
     watcher.events.listen((event) async {
       if (config.verbose) print("WATCH event:$event");
-      await processAllFiles(siteDir, config, pdfBuilder,
-          dataFiles: dataFiles, listings: listings);
+      final changedFile = File(event.path);
+      // Only reprocess .md files in the pages directory
+      if (changedFile.existsSync() && p.extension(changedFile.path).toLowerCase() == '.md') {
+        final relativePath = p.relative(changedFile.path, from: p.join(siteDir.path, 'pages'));
+        if (config.verbose) print("  reprocessing: $relativePath");
+        await processFile(changedFile, p.join(siteDir.path, 'pages'), config.outputPath, config.includesPath,
+            config.templatesPath, pdfBuilder, config.verbose,
+            dataFiles: dataFiles, listings: listings);
+      }
       if (config.pdfPreview && pdfBuilder != null) {
         final pdfPagesRaw = pdfConfig!["pages"];
         final pdfPages = (pdfPagesRaw is List) ? pdfPagesRaw.cast<String>() : <String>[];
@@ -139,8 +146,8 @@ void main(List<String> arguments) async {
       }
     });
 
-    final p = PreviewServer(config.outputPath);
-    await p.start();
+    final previewServer = PreviewServer(config.outputPath);
+    await previewServer.start();
   }
 
   if (pdfBuilder != null) {
