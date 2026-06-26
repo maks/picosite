@@ -185,6 +185,7 @@ class Pdfbuilder {
         inlineClassStyles: inlineClassStyles,
         blockClassStyles: blockClassStyles,
         h1Style: h1TextStyle,
+        headingPageBreak: true,
       );
 
       // Pass custom fonts to HTMLToPdf for CSS font-family resolution
