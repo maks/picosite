@@ -97,3 +97,23 @@ class ShortcodeSyntax extends BlockSyntax {
     return div;
   }
 }
+
+/// Parses `{% pagebreak %}` and outputs an empty div with a special class.
+///
+/// This is used by the PDF builder to insert explicit page breaks.
+class PageBreakSyntax extends BlockSyntax {
+  static final _pattern = RegExp(r'^\{%\s*pagebreak\s*%\}$');
+
+  const PageBreakSyntax();
+
+  @override
+  RegExp get pattern => _pattern;
+
+  @override
+  Node parse(BlockParser parser) {
+    parser.advance();
+    final div = Element('div', []);
+    div.attributes['data-picosite-pagebreak'] = 'true';
+    return div;
+  }
+}

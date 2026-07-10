@@ -123,6 +123,7 @@ Future<String> processMarkdown(
       InlineHtmlSyntax(),
     ],
     blockSyntaxes: [
+      PageBreakSyntax(),
       ShortcodeSyntax(),
       TableSyntax(),
       FencedCodeBlockSyntax(),

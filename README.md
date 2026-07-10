@@ -220,6 +220,16 @@ styles:
         font_size: 12
 ```
 
+#### Pagebreak Shortcode
+
+Use `{% pagebreak %}` to insert an explicit page break in your **PDF output**. This is useful when you want to force content to start on a new page in the generated PDF.
+
+```markdown
+{% pagebreak %}
+```
+
+The shortcode renders as an empty `div` with the attribute `data-picosite-pagebreak="true"`, which the PDF builder detects and uses to insert a page break. This shortcode has no visual effect in HTML output.
+
 
 
 
