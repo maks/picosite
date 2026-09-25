@@ -1,3 +1,7 @@
+## 1.6.1
+
+- Fix detectign bad callout syntax
+
 ## 1.0.2
 
 - Support for content listings: generate dynamic listings of content from site files
