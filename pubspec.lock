@@ -156,9 +156,11 @@ packages:
   htmltopdfwidgets:
     dependency: "direct main"
     description:
-      path: "../htmltopdfwidgets/packages/htmltopdfwidgets"
-      relative: true
-    source: path
+      path: "packages/htmltopdfwidgets"
+      ref: picosite
+      resolved-ref: "8522cc4d261078cb2d1d40ec578929d40398c015"
+      url: "https://github.com/maks/htmltopdfwidgets"
+    source: git
     version: "2.0.1"
   http:
     dependency: transitive

@@ -72,6 +72,7 @@ Future<String> processMarkdown(
   final mdTitlePattern = RegExp("^# (.*)");
   Map frontMatter = {};
   String markdownBody = "";
+  var sourceLineOffset = 0;
 
   // Regular expression to match the YAML front matter
   final regex = RegExp(r'^---\n([\s\S]*?)\n---\n', multiLine: true);
@@ -83,7 +84,8 @@ Future<String> processMarkdown(
     if (yamlFrontMatter == null) {
       throw Exception('No YAML front matter found.');
     }
-    // Extract the remaining markdown content
+    // Extract the remaining markdown content and retain its source line offset.
+    sourceLineOffset = '\n'.allMatches(frontmatterMatch.group(0)!).length;
     markdownBody = markdownDoc.replaceFirst(regex, '');
     if (verbose) print('YAML Front Matter:\n$yamlFrontMatter');
     frontMatter = y.loadYaml(yamlFrontMatter);
@@ -93,6 +95,13 @@ Future<String> processMarkdown(
       'title': title,
       'template': 'basic_page',
     };
+  }
+
+  // BlockParser omits leading blank lines, so include them in diagnostic lines.
+  final leadingBlankLines =
+      RegExp(r'^(?:[ \t]*\r?\n)+').firstMatch(markdownBody)?.group(0);
+  if (leadingBlankLines != null) {
+    sourceLineOffset += '\n'.allMatches(leadingBlankLines).length;
   }
 
   Map docVariables = {};
@@ -124,7 +133,10 @@ Future<String> processMarkdown(
     ],
     blockSyntaxes: [
       PageBreakSyntax(),
-      ShortcodeSyntax(),
+      ShortcodeSyntax(
+        sourceName: filename,
+        sourceLineOffset: sourceLineOffset,
+      ),
       TableSyntax(),
       FencedCodeBlockSyntax(),
       HeaderWithIdSyntax(),
