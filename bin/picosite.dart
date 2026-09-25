@@ -21,7 +21,16 @@ var config = PicositeConfig(
   pdf: "pdf.yml",
 );
 
-void main(List<String> arguments) async {
+Future<void> main(List<String> arguments) async {
+  try {
+    await _run(arguments);
+  } on FormatException catch (error) {
+    stderr.writeln('picosite: ${error.message}');
+    exitCode = 1;
+  }
+}
+
+Future<void> _run(List<String> arguments) async {
   print(""); // blank line to separate output from cmd line
   config = handleArgs(arguments, config);
   print(

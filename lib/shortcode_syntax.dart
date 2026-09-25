@@ -33,7 +33,13 @@ class ShortcodeSyntax extends BlockSyntax {
     r'^\{%\s*end([a-zA-Z0-9_-]+)\s*%\}$',
   );
 
-  const ShortcodeSyntax();
+  final String sourceName;
+  final int sourceLineOffset;
+
+  const ShortcodeSyntax({
+    this.sourceName = 'Markdown input',
+    this.sourceLineOffset = 0,
+  });
 
   @override
   RegExp get pattern => _openPattern;
@@ -65,17 +71,37 @@ class ShortcodeSyntax extends BlockSyntax {
     }
 
     // Multi-line: collect lines until closing tag matches the shortcode name
+    final openingLine =
+        parser.lines.indexOf(parser.current) + 1 + sourceLineOffset;
     parser.advance();
     final lines = <String>[];
+    var foundClose = false;
     while (!parser.isDone) {
       final currentLine = parser.current.content;
       final closeMatch = _closePattern.firstMatch(currentLine);
-      if (closeMatch != null && closeMatch.group(1) == name) {
+      if (closeMatch != null) {
+        final closingName = closeMatch.group(1)!;
+        final closingLine =
+            parser.lines.indexOf(parser.current) + 1 + sourceLineOffset;
+        if (closingName != name) {
+          throw FormatException(
+            '$sourceName:$closingLine: '
+            'unexpected {% end$closingName %}; expected {% end$name %}',
+          );
+        }
         parser.advance();
+        foundClose = true;
         break;
       }
       lines.add(currentLine);
       parser.advance();
+    }
+
+    if (!foundClose) {
+      throw FormatException(
+        '$sourceName:$openingLine: unclosed {% $name %}; '
+        'expected {% end$name %}',
+      );
     }
 
     final text = lines.join('\n').trim();
